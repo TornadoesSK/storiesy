@@ -10,9 +10,19 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model example {
+model wallet {
+    id       String    @id @default(cuid())
+    name     String
+    expenses expense[]
+}
+
+model expense {
     id        String   @id @default(cuid())
-    text      String
+    name      String
+    walletId  String
+    wallet    wallet   @relation(fields: [walletId], references: [id])
+    amount    Float    @default(0)
+    note      String?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }

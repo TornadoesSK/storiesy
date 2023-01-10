@@ -1,6 +1,8 @@
-import { z } from "zod";
+import { z, ZodAny, ZodTypeAny } from "zod";
 import { createTsForm, useTsController } from "@ts-react/form";
 import { ReactNode } from "react";
+import { useForm as useReactHookForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const TextField = () => {
   const { field, error } = useTsController<string>();
@@ -11,10 +13,10 @@ const TextField = () => {
         placeholder={field.name}
         value={field.value ? field.value : ""}
         onChange={(e) => {
-          field.onChange(e.target.value);
+          field.onChange(e.target.value || undefined);
         }}
       />
-      {error?.errorMessage && <span>{error?.errorMessage}</span>}
+      {error && <span>{error.errorMessage}</span>}
     </>
   );
 };
@@ -29,10 +31,12 @@ const NumberField = () => {
         placeholder={field.name}
         value={field.value ? field.value : ""}
         onChange={(e) => {
-          field.onChange(Number(e.target.value));
+          const value = parseInt(e.target.value);
+          if (isNaN(value)) field.onChange(undefined);
+          else field.onChange(value);
         }}
       />
-      {error?.errorMessage && <span>{error?.errorMessage}</span>}
+      {error && <span>{error.errorMessage}</span>}
     </>
   );
 };
@@ -44,10 +48,10 @@ function CheckBoxField() {
     <>
       <input
         type="checkbox"
-        checked={field.value || false}
+        checked={field.value ? field.value : false}
         onChange={(e) => field.onChange(e.target.checked)}
       />
-      {error?.errorMessage && <span>{error?.errorMessage}</span>}
+      {error && <span>{error.errorMessage}</span>}
     </>
   );
 }
@@ -78,3 +82,9 @@ export const Form = createTsForm(mapping, {
     );
   },
 });
+
+export const useForm = <T extends ZodTypeAny>({ schema }: { schema: T }) => {
+  return useReactHookForm<z.infer<T>>({
+    resolver: zodResolver(schema),
+  });
+};
