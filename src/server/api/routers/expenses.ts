@@ -11,6 +11,7 @@ export const expensesRouter = createTRPCRouter({
       z.object({
         name: z.string(),
         amount: z.number(),
+        categoryId: z.string(),
         note: z.string().optional(),
       })
     )
