@@ -32,9 +32,9 @@ type CreateContextOptions = Record<string, never>;
  * @see https://create.t3.gg/en/usage/trpc#-servertrpccontextts
  */
 const createInnerTRPCContext = async (_opts: CreateContextOptions) => {
-  return {
-    prisma,
-  };
+	return {
+		prisma,
+	};
 };
 
 /**
@@ -43,7 +43,7 @@ const createInnerTRPCContext = async (_opts: CreateContextOptions) => {
  * @link https://trpc.io/docs/context
  */
 export const createTRPCContext = async (_opts: CreateNextContextOptions) => {
-  return await createInnerTRPCContext({});
+	return await createInnerTRPCContext({});
 };
 
 /**
@@ -55,14 +55,12 @@ export const createTRPCContext = async (_opts: CreateNextContextOptions) => {
 import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
 
-const t = initTRPC
-  .context<Awaited<ReturnType<typeof createTRPCContext>>>()
-  .create({
-    transformer: superjson,
-    errorFormatter({ shape }) {
-      return shape;
-    },
-  });
+const t = initTRPC.context<Awaited<ReturnType<typeof createTRPCContext>>>().create({
+	transformer: superjson,
+	errorFormatter({ shape }) {
+		return shape;
+	},
+});
 
 /**
  * 3. ROUTER & PROCEDURE (THE IMPORTANT BIT)
