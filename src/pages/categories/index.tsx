@@ -1,11 +1,13 @@
 import { AddCategory } from "../../components/AddCategory";
+import { Loading } from "../../components/Loading";
 import { api } from "../../utils/api";
 
 export default function Categories() {
 	const categories = api.categories.getAll.useQuery();
 	return (
 		<>
-			<div>
+			<div className="relative">
+				{categories.isFetching && <Loading />}
 				{categories.data === undefined || categories.data.length === 0
 					? "No categories"
 					: categories.data.map((category) => (
