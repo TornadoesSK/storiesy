@@ -1,5 +1,6 @@
 import { api } from "../utils/api";
-import { Form, useForm } from "./Form";
+import { Form } from "./form/Form";
+import { useForm } from "./form/useForm";
 import { z } from "zod";
 
 const formSchema = z.object({
