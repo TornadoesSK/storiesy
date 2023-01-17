@@ -1,5 +1,5 @@
-import { ExpensesList } from "../components/ExpensesList";
-import { AddExpense } from "../components/AddExpense";
+import { ExpensesList } from "../components/expenses/ExpensesList";
+import { AddExpense } from "../components/expenses/AddExpense";
 
 export default function Home() {
 	return (

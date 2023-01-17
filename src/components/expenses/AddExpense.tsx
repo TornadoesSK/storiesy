@@ -1,7 +1,7 @@
-import { api } from "../utils/api";
+import { api } from "../../utils/api";
 import { z, type output } from "zod";
-import { Form, SelectStringSchema } from "./form/Form";
-import { useForm } from "./form/useForm";
+import { Form, SelectStringSchema } from "../form/Form";
+import { useForm } from "../form/useForm";
 
 const formSchema = z.object({
 	name: z.string({ required_error: "Please enter a name." }),

@@ -24,4 +24,10 @@ export const expensesRouter = createTRPCRouter({
 				data: { ...input, walletId: wallet.id },
 			});
 		}),
+
+	delete: publicProcedure
+		.input(z.string()) // id
+		.mutation(async ({ ctx, input }) => {
+			return await ctx.prisma.expense.delete({ where: { id: input } });
+		}),
 });
