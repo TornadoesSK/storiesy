@@ -56,15 +56,24 @@ function Checkbox() {
 	);
 }
 
-function Select({ options }: { options: string[] }) {
+type SelectProps = {
+	options: string[];
+	labelMap?: Record<string, ReactNode>;
+};
+function Select({ options, labelMap }: SelectProps) {
 	const { field, error } = useTsController<string>();
 
 	return (
 		<>
-			<select value={field.value ? field.value : ""} name={field.name}>
+			<select
+				value={field.value ? field.value : ""}
+				onChange={(e) => field.onChange(e.target.value || undefined)}
+				className="select-bordered select"
+			>
+				<option value="">Choose an option</option>
 				{options.map((option) => (
 					<option value={option} key={option}>
-						{option}
+						{labelMap?.[option] ?? option}
 					</option>
 				))}
 			</select>
@@ -79,23 +88,21 @@ const mapping = [
 	[z.string(), TextInput],
 	[z.number(), NumberInput],
 	[z.boolean(), Checkbox],
-	[SelectStringSchema, Select] as const,
+	[SelectStringSchema, Select],
 ] as const;
 
+type FormProps = {
+	children: ReactNode;
+	onSubmit: () => void;
+	className?: string;
+	loading?: boolean;
+};
 export const Form = createTsForm(mapping, {
-	FormComponent: ({
-		children,
-		onSubmit,
-		className,
-	}: {
-		children: ReactNode;
-		onSubmit: () => void;
-		className?: string;
-	}) => {
+	FormComponent: ({ children, onSubmit, className, loading }: FormProps) => {
 		return (
 			<form onSubmit={onSubmit} className={className}>
 				{children}
-				<button className="btn" type="submit">
+				<button className={`btn ${loading ? "loading" : ""}`} type="submit">
 					submit
 				</button>
 			</form>

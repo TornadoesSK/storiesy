@@ -21,7 +21,7 @@ export const AddCategory = () => {
 				}}
 				onSubmit={(input) => {
 					addExample.mutate(input, {
-						onSuccess: (data) => {
+						onSuccess(data) {
 							utils.categories.getAll.setData(undefined, (oldData) => [
 								...(oldData ? oldData : []),
 								data,

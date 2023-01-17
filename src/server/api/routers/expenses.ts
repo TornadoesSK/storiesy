@@ -20,7 +20,7 @@ export const expensesRouter = createTRPCRouter({
 			if (wallet === null) {
 				wallet = await ctx.prisma.wallet.create({ data: { name: "Test" } });
 			}
-			return ctx.prisma.expense.create({
+			return await ctx.prisma.expense.create({
 				data: { ...input, walletId: wallet.id },
 			});
 		}),
