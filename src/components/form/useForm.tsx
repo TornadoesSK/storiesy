@@ -1,4 +1,4 @@
-import { z, type ZodTypeAny } from "zod";
+import { type z, type ZodTypeAny } from "zod";
 import { useForm as useReactHookForm, type UseFormProps } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 

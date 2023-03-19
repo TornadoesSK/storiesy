@@ -1,12 +1,12 @@
 import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const expensesRouter = createTRPCRouter({
-	getAll: publicProcedure.query(({ ctx }) => {
+	getAll: protectedProcedure.query(({ ctx }) => {
 		return ctx.prisma.expense.findMany();
 	}),
-	create: publicProcedure
+	create: protectedProcedure
 		.input(
 			z.object({
 				name: z.string(),
@@ -24,8 +24,7 @@ export const expensesRouter = createTRPCRouter({
 				data: { ...input, walletId: wallet.id },
 			});
 		}),
-
-	delete: publicProcedure
+	delete: protectedProcedure
 		.input(z.string()) // id
 		.mutation(async ({ ctx, input }) => {
 			return await ctx.prisma.expense.delete({ where: { id: input } });

@@ -1,12 +1,13 @@
 import { type AppType } from "next/app";
 import Head from "next/head";
-
 import { api } from "../utils/api";
-
 import "../styles/globals.css";
 import Link from "next/link";
+import { appStateContext, useApp } from "../components/useAppState";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
+	const appState = useApp();
+
 	return (
 		<>
 			<main>
@@ -43,7 +44,9 @@ const MyApp: AppType = ({ Component, pageProps }) => {
 					<meta name="description" content="Expense tracker" />
 					<link rel="icon" href="/favicon.ico" />
 				</Head>
-				<Component {...pageProps} />
+				<appStateContext.Provider value={appState}>
+					<Component {...pageProps} />
+				</appStateContext.Provider>
 			</main>
 		</>
 	);
