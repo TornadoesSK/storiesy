@@ -1,7 +1,7 @@
 import { useTsController } from "@ts-react/form";
 
 type TextInputProps = {
-	placeholder: string,
+	placeholder?: string,
 	className?: string,
 	labelText?: string
 }
@@ -13,7 +13,7 @@ export const TextInput = ({placeholder, className, labelText}: TextInputProps) =
 			{labelText && <label className="text-neutral mb-2 inline-block">{labelText}</label>}
 			<input
 				className={"input-bordered input " + className}
-				placeholder={placeholder}
+				placeholder={placeholder || field.name}
 				value={field.value ? field.value : ""}
 				onChange={(e) => {
 					field.onChange(e.target.value || undefined);
