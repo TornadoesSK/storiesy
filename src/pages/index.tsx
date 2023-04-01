@@ -13,7 +13,7 @@ export default function Home() {
 		<>
 			<div className="flex h-full flex-col justify-between p-8">
 				<h1 className="text-4xl text-neutral">New comic</h1>
-				<div className="mt-8 mb-8 h-full overflow-y-scroll rounded-lg border-2 border-gray-300 px-6 py-4">
+				<div className="mt-8 mb-8 h-full overflow-y-scroll rounded-lg border-2 border-gray-300 px-6 py-4 text-neutral">
 					{mutation.isLoading && <p>Loading...</p>}
 					{result?.scenes.map((scene, idx) => (
 						<div key={idx} className="pb-4">
@@ -53,7 +53,6 @@ export default function Home() {
 						</div>
 					))}
 				</div>
-				<div>Comic main character and story description</div>
 				<Form
 					schema={schema}
 					onSubmit={async (output) => {
@@ -66,12 +65,14 @@ export default function Home() {
 							className:
 								"border-2 bg-white text-neutral w-full border-gray-300 focus:outline-0 focus:border-primary disabled:bg-gray-300 disabled:text-white disabled:border-gray-300",
 							disabled: mutation.isLoading,
+							labelText: "Comic main character and story description",
+							wrapperClassName: "grow"
 						},
 						model: {
 							options: ["dalle", "stablediffusion"],
 						},
 					}}
-					formProps={{ className: "w-full flex gap-2" }}
+					formProps={{ className: "w-full flex items-end gap-2" }}
 				/>
 			</div>
 		</>

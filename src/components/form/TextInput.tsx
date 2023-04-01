@@ -5,12 +5,13 @@ type TextInputProps = {
 	className?: string,
 	disabled?: boolean,
 	labelText?: string,
+	wrapperClassName?: string
 }
 
-export const TextInput = ({placeholder, className, disabled, labelText}: TextInputProps) => {
+export const TextInput = ({placeholder, className, disabled, labelText, wrapperClassName}: TextInputProps) => {
 	const { field, error } = useTsController<string>();
 	return (
-		<>
+		<div className={wrapperClassName}>
 			{labelText && <label className="text-neutral mb-2 inline-block">{labelText}</label>}
 			<input
 				className={"input-bordered input " + className}
@@ -22,6 +23,6 @@ export const TextInput = ({placeholder, className, disabled, labelText}: TextInp
 				disabled={disabled}
 			/>
 			{error && <span>{error.errorMessage}</span>}
-		</>
+		</div>
 	);
 };
