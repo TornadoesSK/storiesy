@@ -5,14 +5,14 @@ import { api, type RouterOutputs } from "../../utils/api";
 export default function Organization() {
 	const organization = api.organization.get.useQuery();
 	return (
-		<>
-			<ChangeOrganization />
+		<div className="p-8 text-neutral h-full flex flex-col justify-between">
 			{organization.data ? (
 				<OrganizationDetail organization={organization.data} />
 			) : (
 				<CreateOrganization />
 			)}
-		</>
+			<ChangeOrganization />
+		</div>
 	);
 }
 
@@ -22,7 +22,7 @@ function OrganizationDetail({
 	organization: NonNullable<RouterOutputs["organization"]["get"]>;
 }) {
 	return (
-		<div className="p-8 text-neutral">
+		<div>
 			<h1 className="mb-4 text-4xl text-neutral">Organization detail</h1>
 			<div className="py-2">
 				<span className="font-semibold">Organization name:</span> {organization.name}
@@ -55,7 +55,7 @@ function ChangeOrganization() {
 			{organizationIds.isLoading && <p>Fetching organizations...</p>}
 			{organizationIds.data && (
 				<>
-					<h1>Change organization</h1>
+					<h1 className="text-xl mb-2">Change organization</h1>
 					<Form
 						schema={changeOrganizationSchema}
 						onSubmit={async (output) => {
@@ -75,6 +75,8 @@ function ChangeOrganization() {
 						}}
 						formProps={{
 							hasSubmitButton: true,
+							submitText: "Change",
+							className: "w-full flex items-end gap-2"
 						}}
 					/>
 				</>

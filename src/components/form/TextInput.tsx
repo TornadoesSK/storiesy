@@ -21,7 +21,7 @@ export const TextInput = ({
 			{labelText && <label className="mb-2 inline-block text-neutral">{labelText}</label>}
 			<input
 				className={
-					"input-bordered input w-full bg-white text-neutral shadow-lg focus:border-primary focus:outline-0 disabled:border-gray-300 disabled:bg-gray-300 disabled:text-white " +
+					"input-bordered input w-full bg-white text-neutral shadow-lg focus:border-primary focus:outline-0 disabled:border-gray-300 disabled:bg-gray-300 disabled:text-gray-400 " +
 					className
 				}
 				placeholder={placeholder || field.name}

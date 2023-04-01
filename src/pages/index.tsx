@@ -95,7 +95,7 @@ export default function Home() {
 							placeholder: "Number",
 						},
 					}}
-					formProps={{ className: "w-full flex items-end gap-2", hasSubmitButton: true }}
+					formProps={{ className: "w-full flex items-end gap-2", hasSubmitButton: true, loading: loading }}
 				/>
 			</div>
 		</>
