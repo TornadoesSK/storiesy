@@ -27,24 +27,25 @@ function OrganizationDetail({
 	const addMemberMutation = api.organization.addMember.useMutation();
 
 	return (
-		<div className="p-8">
-			<h1 className="text-4xl text-neutral">Organization detail</h1>
-			<div>
-				<span className="font-medium">Name:</span> {organization.name}
+		<div className="p-8 text-neutral">
+			<h1 className="mb-4 text-4xl text-neutral">Organization detail</h1>
+			<div className="py-2">
+				<span className="font-semibold">Organization name:</span> {organization.name}
 			</div>
-			<div>
-				<span className="font-medium">Color:</span> {organization.color}
+			<div className="py-2">
+				<span className="font-semibold">Organization primary color:</span>{" "}
+				<span className="bg-primary p-1 text-white">{organization.color}</span>
 			</div>
-			<div>
-				<span className="font-medium">Members:</span>
+			<div className="py-2">
+				<span className="font-semibold">Members:</span>
 				<ul>
 					{organization.account.map((member, idx) => (
 						<li key={`${member}${idx}`}>{member.email}</li>
 					))}
 				</ul>
 			</div>
-			<div>
-				Add members
+			<div className="py-2">
+				<span className="font-semibold">Add members</span>
 				<Form
 					schema={addOrganizationMemberSchema}
 					onSubmit={async (output) => {
@@ -53,6 +54,7 @@ function OrganizationDetail({
 							location.reload();
 						}
 					}}
+					props={{ email: { placeholder: "Email address" } }}
 				/>
 				{addMemberMutation.isLoading && <p>Loading...</p>}
 			</div>
