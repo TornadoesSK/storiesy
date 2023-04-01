@@ -7,8 +7,7 @@ import { api, type RouterOutputs } from "../utils/api";
 const schema = z.object({
 	prompt: z.string(),
 	model: z.enum(["dalle", "stablediffusion"]),
-	sceneCount: z.number(),
-	hardLimit: z.number(),
+	sceneCount: z.number().optional(),
 });
 
 export default function Home() {
@@ -86,13 +85,8 @@ export default function Home() {
 							labelText: "Max number of scenes",
 							placeholder: "Number",
 						},
-						hardLimit: {
-							disabled: mutation.isLoading,
-							labelText: "Scene hard limit",
-							placeholder: "Number",
-						},
 					}}
-					formProps={{ className: "w-full flex items-end gap-2" }}
+					formProps={{ className: "w-full flex items-end gap-2", hasSubmitButton: true }}
 				/>
 			</div>
 		</>

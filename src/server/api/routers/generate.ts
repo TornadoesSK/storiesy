@@ -62,11 +62,11 @@ export const generateRouter = createTRPCRouter({
 			z.object({
 				prompt: z.string(),
 				model: z.enum(["dalle", "stablediffusion"]),
-				sceneCount: z.number(),
-				hardLimit: z.number().optional(),
+				sceneCount: z.number().default(4),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			// throw "here";
 			const basePrompt = generateBasePrompt({ sceneCount: input.sceneCount });
 			const chatOutput = await promptChat(ctx.openai, basePrompt, input.prompt);
 
@@ -90,7 +90,7 @@ export const generateRouter = createTRPCRouter({
 			}
 
 			const promises = processedChatOutput.data.scenes
-				.slice(0, input.hardLimit)
+				.slice(0, input.sceneCount)
 				.map(async (scene) => {
 					return {
 						...scene,
