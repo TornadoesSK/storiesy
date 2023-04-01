@@ -1,23 +1,27 @@
-import { ExpensesList } from "../components/expenses/ExpensesList";
-import { AddExpense } from "../components/expenses/AddExpense";
-import { useRouter } from "next/router";
-import { useCallback } from "react";
-import { useAppState } from "../components/useAppState";
+import Link from "next/link";
+import { useState } from "react";
+import { z } from "zod";
+import { Form } from "../components/form/Form";
+import { api } from "../utils/api";
+
+const schema = z.object({ prompt: z.string() });
 
 export default function Home() {
-	const { supabaseClient } = useAppState();
-	const router = useRouter();
-	const handleSignOutClick = useCallback(async () => {
-		await supabaseClient.auth.signOut();
-		router.reload();
-	}, [router, supabaseClient.auth]);
+	const mutation = api.generate.single.useMutation();
+	const [result, setResult] = useState<string>();
 	return (
 		<>
-			<button onClick={handleSignOutClick} className="btn">
-				Sign out
-			</button>
-			<ExpensesList />
-			<AddExpense />
+			<Link href="/expenses">Expenses (example)</Link>
+			<div className="px-4 pt-4">
+				<h1 className="text-4xl">STORIESY</h1>
+				<Form
+					schema={schema}
+					onSubmit={async (output) => {
+						setResult(await (await mutation.mutateAsync(output)).prompt);
+					}}
+				/>
+				{result}
+			</div>
 		</>
 	);
 }

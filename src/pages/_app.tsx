@@ -4,9 +4,16 @@ import { api } from "../utils/api";
 import "../styles/globals.css";
 import Link from "next/link";
 import { appStateContext, useApp } from "../components/useAppState";
+import { useRouter } from "next/router";
+import { useCallback } from "react";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
 	const appState = useApp();
+	const router = useRouter();
+	const handleSignOutClick = useCallback(async () => {
+		await appState.supabaseClient.auth.signOut();
+		router.reload();
+	}, [router, appState.supabaseClient.auth]);
 
 	return (
 		<>
@@ -45,6 +52,9 @@ const MyApp: AppType = ({ Component, pageProps }) => {
 					<link rel="icon" href="/favicon.ico" />
 				</Head>
 				<appStateContext.Provider value={appState}>
+					<button onClick={handleSignOutClick} className="btn">
+						Sign out
+					</button>
 					<Component {...pageProps} />
 				</appStateContext.Provider>
 			</main>
