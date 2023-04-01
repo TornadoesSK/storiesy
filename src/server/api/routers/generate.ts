@@ -1,6 +1,5 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { type textPrompt } from "@prisma/client";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { type OpenAIApi } from "openai";
 import { type paths } from "../../../utils/customModelApiSchema";
@@ -57,56 +56,66 @@ const textOutputSchema = z.object({
 });
 
 export const generateRouter = createTRPCRouter({
-	single: protectedProcedure
+	imageConfig: protectedProcedure
 		.input(
 			z.object({
 				prompt: z.string(),
-				model: z.enum(["dalle", "stablediffusion"]),
 				sceneCount: z.number().default(4),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			// throw "here";
 			const basePrompt = generateBasePrompt({ sceneCount: input.sceneCount });
 			const chatOutput = await promptChat(ctx.openai, basePrompt, input.prompt);
-
-			async function saveToDb(
-				extraProps: Partial<Omit<textPrompt, "input" | "output" | "systemPrompt">>,
-			) {
-				await ctx.prisma.textPrompt.create({
-					data: {
-						input: input.prompt,
-						output: chatOutput,
-						systemPrompt: basePrompt,
-						...extraProps,
-					},
-				});
-			}
-
 			const processedChatOutput = parseChatOutput(chatOutput);
+			// log to db
+			await ctx.prisma.textPrompt.create({
+				data: {
+					input: input.prompt,
+					output: chatOutput,
+					systemPrompt: basePrompt,
+					error: processedChatOutput.error,
+				},
+			});
 			if (!processedChatOutput.success) {
-				await saveToDb({ error: processedChatOutput.error });
 				throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: processedChatOutput.error });
 			}
-
-			const promises = processedChatOutput.data.scenes
-				.slice(0, input.sceneCount)
-				.map(async (scene) => {
-					return {
-						...scene,
-						// imageSrc: {
-						// 	type: "url",
-						// 	url: "https://picsum.photos/1024/1024",
-						// },
-						imageSrc: await (input.model === "dalle"
-							? promptImageDalle(ctx.openai, scene.imagePrompt)
-							: promptImageStableDiffusion(scene.imagePrompt)),
-					};
-				});
-
+			return processedChatOutput.data;
+		}),
+	images: protectedProcedure
+		.input(
+			z.object({
+				model: z.enum(["dalle", "stablediffusion"]),
+				scenes: z.array(
+					z.object({
+						imagePrompt: z.string(),
+						speechBubble: z
+							.object({
+								characterName: z.string().nullish(),
+								text: z.string(),
+							})
+							.optional(),
+					}),
+				),
+				sceneLimit: z.number().default(4),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const promises = input.scenes.slice(0, input.sceneLimit).map(async (scene) => {
+				return {
+					...scene,
+					imageSrc: await (input.model === "dalle"
+						? promptImageDalle(ctx.openai, scene.imagePrompt)
+						: promptImageStableDiffusion(scene.imagePrompt)),
+				};
+			});
 			const result = await Promise.all(promises);
-			await saveToDb({ imageUrls: JSON.stringify(result.map((scene) => scene.imageSrc)) });
-
+			// log to db
+			await ctx.prisma.imagePrompt.create({
+				data: {
+					input: JSON.stringify(input.scenes.map((scene) => scene.imagePrompt)),
+					output: JSON.stringify(result),
+				},
+			});
 			return { scenes: result };
 		}),
 });

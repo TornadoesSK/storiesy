@@ -11,14 +11,17 @@ const schema = z.object({
 });
 
 export default function Home() {
-	const mutation = api.generate.single.useMutation();
-	const [result, setResult] = useState<RouterOutputs["generate"]["single"]>();
+	const configMutation = api.generate.imageConfig.useMutation();
+	const imagesMutation = api.generate.images.useMutation();
+	const [result, setResult] = useState<RouterOutputs["generate"]["images"]>();
+	const loading = configMutation.isLoading || imagesMutation.isLoading;
 	return (
 		<>
 			<div className="flex h-full flex-col justify-between p-8">
 				<h1 className="text-4xl text-neutral">New comic</h1>
 				<div className="mt-8 mb-8 h-full overflow-y-scroll rounded-lg px-6 py-4 text-neutral shadow-xl">
-					{mutation.isLoading && <p>Loading...</p>}
+					{configMutation.isLoading && <p>Loading config...</p>}
+					{imagesMutation.isLoading && <p>Loading images...</p>}
 					{result?.scenes.map((scene, idx) => (
 						<div key={idx} className="pb-4">
 							<div className="italic">{scene.imagePrompt}</div>
@@ -66,22 +69,28 @@ export default function Home() {
 					schema={schema}
 					onSubmit={async (output) => {
 						setResult(undefined); // Hide previous result
-						setResult(await mutation.mutateAsync(output));
+						const config = await configMutation.mutateAsync({
+							prompt: output.prompt,
+							sceneCount: output.sceneCount,
+						});
+						console.log(config);
+						const result = await imagesMutation.mutateAsync({ ...config, model: output.model });
+						setResult(result);
 					}}
 					props={{
 						prompt: {
 							placeholder: "Type your comic description..",
-							disabled: mutation.isLoading,
+							disabled: loading,
 							labelText: "Comic main character and story description",
 							wrapperClassName: "grow",
 						},
 						model: {
 							options: ["dalle", "stablediffusion"],
-							disabled: mutation.isLoading,
+							disabled: loading,
 							labelText: "Select image model",
 						},
 						sceneCount: {
-							disabled: mutation.isLoading,
+							disabled: loading,
 							labelText: "Max number of scenes",
 							placeholder: "Number",
 						},

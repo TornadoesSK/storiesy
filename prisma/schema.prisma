@@ -45,6 +45,14 @@ model textPrompt {
     systemPrompt String
 }
 
+model imagePrompt {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    input     String
+    output    String
+    error     String?
+}
+
 model account {
     id             String        @id @default(cuid())
     userId         String
