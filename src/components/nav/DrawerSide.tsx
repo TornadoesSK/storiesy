@@ -16,7 +16,7 @@ export default function DrawerSide({
 	return (
 		<div className="drawer-side">
 			<label htmlFor={sidebarId} className="drawer-overlay"></label>
-			<ul className="menu items-center justify-between bg-base-100 p-4 text-base-content">
+			<ul className="menu items-center justify-between bg-primary p-4 text-base-content">
 				<li>
 					<span className="flex-col items-center text-white">
 						<SignOutIcon />

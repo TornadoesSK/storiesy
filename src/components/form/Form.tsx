@@ -26,9 +26,9 @@ export const Form = createTsForm(mapping, {
 		return (
 			<form onSubmit={onSubmit} className={className}>
 				{children}
-				<button className={`btn ${loading ? "loading" : ""}`} type="submit">
+				{/* <button className={`btn ${loading ? "loading" : ""}`} type="submit">
 					submit
-				</button>
+				</button> */}
 			</form>
 		);
 	},
