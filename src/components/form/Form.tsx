@@ -13,6 +13,7 @@ const mapping = [
 	[z.number(), NumberInput],
 	[z.boolean(), Checkbox],
 	[SelectStringSchema, Select],
+	[z.enum([""]), Select],
 ] as const;
 
 type FormProps = {

@@ -1,11 +1,10 @@
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
 import { z } from "zod";
 import { Form } from "../components/form/Form";
 import { api, type RouterOutputs } from "../utils/api";
 
-const schema = z.object({ prompt: z.string() });
+const schema = z.object({ prompt: z.string(), model: z.enum(["dalle", "stablediffusion"]) });
 
 export default function Home() {
 	const mutation = api.generate.single.useMutation();
@@ -26,13 +25,35 @@ export default function Home() {
 								</div>
 							)}
 							{scene.imageSrc ? (
-								<Image src={scene.imageSrc} alt="AI generated image" width={512} height={512} />
+								scene.imageSrc.type === "url" ? (
+									<>
+										{scene.imageSrc.url ? (
+											<Image
+												src={scene.imageSrc.url}
+												alt="AI generated image"
+												width={512}
+												height={512}
+											/>
+										) : (
+											"malformed url"
+										)}
+									</>
+								) : (
+									<>
+										{scene.imageSrc.data ? (
+											<Image src={scene.imageSrc.data} alt="AI generated image" />
+										) : (
+											"malformed data"
+										)}
+									</>
+								)
 							) : (
 								`bad image url ${scene.imageSrc}`
 							)}
 						</div>
 					))}
 				</div>
+				<div>Comic main character and story description</div>
 				<Form
 					schema={schema}
 					onSubmit={async (output) => {
@@ -44,11 +65,13 @@ export default function Home() {
 							placeholder: "Type your comic description..",
 							className:
 								"border-2 bg-white text-neutral w-full border-gray-300 focus:outline-0 focus:border-primary disabled:bg-gray-300 disabled:text-white disabled:border-gray-300",
-							labelText: "Comic main character and story description",
-							disabled: mutation.isLoading
+							disabled: mutation.isLoading,
+						},
+						model: {
+							options: ["dalle", "stablediffusion"],
 						},
 					}}
-					formProps={{ className: "w-full" }}
+					formProps={{ className: "w-full flex gap-2" }}
 				/>
 			</div>
 		</>

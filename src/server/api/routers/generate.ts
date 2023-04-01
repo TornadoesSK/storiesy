@@ -3,6 +3,14 @@ import { z } from "zod";
 import { type textPrompt } from "@prisma/client";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { type OpenAIApi } from "openai";
+import { type paths } from "../../../utils/customModelApiSchema";
+import { Fetcher } from "openapi-typescript-fetch";
+import { env } from "../../../env/server.mjs";
+
+const fetcher = Fetcher.for<paths>();
+fetcher.configure({
+	baseUrl: env.CUSTOM_IMAGE_MODEL_API_URL,
+});
 
 const basePrompt =
 	'Your task is to create stories based on the user prompt. The story will be in a comics format - it will have an image and some dialogue. You need to imagine 3 scenes from this comic. Create a prompt for the image generation AI Dall-E, be as detailed and consistent as possible, especially with the character descriptions. The image prompt must be extra long and verbose. You need to the scene in great detail, each character in it and what they are doing. At the start of each scene, you need to repeat each character description that is in that scene, because Dall-E doesn\'t know anything that happened in previous scenes. You also need to output the name of the character speaking and what they say. Provide all of this in JSON - the schema is `{ "scenes": [{ "imagePrompt": "string", "speechBubble": { "characterName": "string", "text": "string" } }] }`. If you need to use quotes, use apostrophes instead to not break the JSON. Do not output anything apart from the JSON';
@@ -26,6 +34,7 @@ export const generateRouter = createTRPCRouter({
 		.input(
 			z.object({
 				prompt: z.string(),
+				model: z.enum(["dalle", "stablediffusion"]),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -54,7 +63,9 @@ export const generateRouter = createTRPCRouter({
 			const promises = processedChatOutput.data.scenes.map(async (scene) => {
 				return {
 					...scene,
-					imageSrc: await promptImage(ctx.openai, scene.imagePrompt),
+					imageSrc: await (input.model === "dalle"
+						? promptImageDalle(ctx.openai, scene.imagePrompt)
+						: promptImageStableDiffusion(scene.imagePrompt)),
 				};
 			});
 
@@ -81,15 +92,34 @@ async function promptChat(openai: OpenAIApi, prompt: string) {
 	return completion.data.choices[0]?.message?.content ?? "ERROR";
 }
 
-async function promptImage(openai: OpenAIApi, prompt: string) {
-	return (
-		await openai.createImage({
-			prompt: prompt,
-			n: 1,
-			size: "1024x1024",
-			response_format: "url",
-		})
-	).data.data[0]?.url;
+type ImagePromptOutput =
+	| {
+			type: "url";
+			url?: string;
+	  }
+	| {
+			type: "base64";
+			data?: string;
+	  };
+
+async function promptImageDalle(openai: OpenAIApi, prompt: string): Promise<ImagePromptOutput> {
+	return {
+		type: "url",
+		url: (
+			await openai.createImage({
+				prompt: prompt,
+				n: 1,
+				size: "1024x1024",
+				response_format: "url",
+			})
+		).data.data[0]?.url,
+	};
+}
+
+async function promptImageStableDiffusion(prompt: string): Promise<ImagePromptOutput> {
+	const fetch = fetcher.path("/sdapi/v1/txt2img").method("post").create();
+	const result = await fetch({ prompt });
+	return { type: "base64", data: result.data.images?.[0] };
 }
 
 function parseChatOutput(output: string) {
