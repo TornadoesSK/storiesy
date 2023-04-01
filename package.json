@@ -8,7 +8,8 @@
 		"postinstall": "prisma generate",
 		"lint": "next lint",
 		"start": "next start",
-		"db:push": "npx prisma db push"
+		"db:push": "npx prisma db push",
+		"custommodel:genapi": "node generateCustomModelApiSchema.js"
 	},
 	"dependencies": {
 		"@prisma/client": "^4.8.0",
@@ -20,6 +21,7 @@
 		"@trpc/server": "^10.7.0",
 		"@ts-react/form": "^1.1.1",
 		"daisyui": "^2.46.1",
+		"dotenv": "^16.0.3",
 		"next": "^13.0.0",
 		"openai": "^3.2.1",
 		"react": "18.2.0",
