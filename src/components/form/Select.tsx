@@ -26,7 +26,7 @@ export function Select({
 				value={field.value ? field.value : ""}
 				onChange={(e) => field.onChange(e.target.value || undefined)}
 				className={
-					"select-bordered select w-full bg-white text-neutral shadow-lg focus:border-primary focus:outline-0 disabled:border-gray-300 disabled:bg-gray-300 disabled:text-white " +
+					"select-bordered select w-full bg-white text-neutral font-normal text-base shadow-lg focus:border-primary focus:outline-0 disabled:border-gray-300 disabled:bg-gray-300 disabled:text-gray-400 " +
 					className
 				}
 				disabled={disabled}

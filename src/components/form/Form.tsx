@@ -29,7 +29,7 @@ export const Form = createTsForm(mapping, {
 			<form onSubmit={onSubmit} className={className}>
 				{children}
 				{hasSubmitButton && (
-					<button className={`btn ${loading ? "loading" : ""}`} type="submit">
+					<button className={`btn text-white bg-primary border-0 ${loading ? "loading" : ""}`} type="submit">
 						Submit
 					</button>
 				)}
