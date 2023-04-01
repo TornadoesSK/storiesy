@@ -1,15 +1,15 @@
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { z } from "zod";
 import { Form } from "../components/form/Form";
-import { type PromptOutput } from "../server/api/routers/generate";
-import { api } from "../utils/api";
+import { api, type RouterOutputs } from "../utils/api";
 
 const schema = z.object({ prompt: z.string() });
 
 export default function Home() {
 	const mutation = api.generate.single.useMutation();
-	const [result, setResult] = useState<PromptOutput>();
+	const [result, setResult] = useState<RouterOutputs["generate"]["single"]>();
 	return (
 		<>
 			<Link href="/expenses">Expenses (example)</Link>
@@ -26,10 +26,17 @@ export default function Home() {
 				{result?.scenes.map((scene, idx) => (
 					<div key={idx} className="pb-4">
 						<div className="italic">{scene.imagePrompt}</div>
-						<div>
-							<span className="font-medium">{scene.speechBubble.characterName}</span>:{" "}
-							<span>{scene.speechBubble.text}</span>
-						</div>
+						{scene.speechBubble && (
+							<div>
+								<span className="font-medium">{scene.speechBubble.characterName}</span>:{" "}
+								<span>{scene.speechBubble.text}</span>
+							</div>
+						)}
+						{scene.imageSrc ? (
+							<Image src={scene.imageSrc} alt="AI generated image" width={512} height={512} />
+						) : (
+							`bad image url ${scene.imageSrc}`
+						)}
 					</div>
 				))}
 			</div>

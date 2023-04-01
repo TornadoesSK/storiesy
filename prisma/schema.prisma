@@ -41,5 +41,6 @@ model textPrompt {
     input        String
     output       String
     error        String?
+    imageUrls    String?
     systemPrompt String
 }
