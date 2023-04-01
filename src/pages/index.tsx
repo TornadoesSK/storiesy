@@ -24,11 +24,11 @@ export default function Home() {
 				/>
 				{mutation.isLoading && <p>Loading...</p>}
 				{result?.scenes.map((scene, idx) => (
-					<div key={idx}>
-						<div>{scene.imagePrompt}</div>
+					<div key={idx} className="pb-4">
+						<div className="italic">{scene.imagePrompt}</div>
 						<div>
-							<span className="font-medium">{scene.speechBubble.characterName}</span>:
-							<span>{scene.speechBubble.text}</span>:
+							<span className="font-medium">{scene.speechBubble.characterName}</span>:{" "}
+							<span>{scene.speechBubble.text}</span>
 						</div>
 					</div>
 				))}

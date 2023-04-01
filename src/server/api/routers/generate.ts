@@ -39,19 +39,34 @@ export const generateRouter = createTRPCRouter({
 				],
 			});
 			const textOutput = completion.data.choices[0]?.message?.content ?? "ERROR";
-			const result = textOutputSchema.safeParse(textOutput);
+			async function saveToDb(error: string | null) {
+				await ctx.prisma.textPrompt.create({
+					data: {
+						input: input.prompt,
+						output: textOutput,
+						systemPrompt: basePrompt,
+						error,
+					},
+				});
+			}
 
-			await ctx.prisma.textPrompt.create({
-				data: {
-					input: input.prompt,
-					output: textOutput,
-					systemPrompt: basePrompt,
-					error: !result.success ? JSON.stringify(result.error.issues) : null,
-				},
-			});
+			let parsedJson;
+			try {
+				parsedJson = JSON.parse(textOutput);
+			} catch (e) {
+				await saveToDb(`Badly formatted JSON ${e instanceof Error ? e.message : "weird error"}`);
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Invalid output from AI: Badly formatted JSON",
+				});
+			}
+
+			const result = textOutputSchema.safeParse(parsedJson);
 			if (!result.success) {
+				await saveToDb(JSON.stringify(result.error.issues));
 				throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Invalid output from AI" });
 			}
+
 			return result.data;
 		}),
 });
