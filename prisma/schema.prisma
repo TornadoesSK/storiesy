@@ -34,3 +34,10 @@ model category {
     name    String
     expense expense[]
 }
+
+model textPrompt {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    input     String
+    output    String
+}
