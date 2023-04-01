@@ -13,6 +13,13 @@ export const organizationRouter = createTRPCRouter({
 		}
 		return ctx.prisma.organization.findUniqueOrThrow({
 			where: { id: account.organizationId },
+			include: {
+				account: {
+					select: {
+						email: true,
+					},
+				},
+			},
 		});
 	}),
 	create: protectedProcedure
@@ -35,5 +42,45 @@ export const organizationRouter = createTRPCRouter({
 			await ctx.prisma.organization.create({
 				data: { ...input, account: { connect: { id: account.id } } },
 			});
+		}),
+	addMember: protectedProcedure
+		.input(
+			z.object({
+				email: z.string().email(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const account = await ctx.prisma.account.findFirstOrThrow({
+				where: { userId: ctx.user.id },
+			});
+			const organizationId = account.organizationId;
+			if (!organizationId) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "You are not a member of an organization",
+				});
+			}
+			const invited = await ctx.prisma.account.findFirst({
+				where: { email: input.email },
+			});
+			if (!invited) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "User not found",
+				});
+			}
+			if (invited.organizationId) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "User is already a member of an organization",
+				});
+			}
+			await ctx.prisma.account.update({
+				data: {
+					organizationId,
+				},
+				where: { id: invited.id },
+			});
+			return true;
 		}),
 });

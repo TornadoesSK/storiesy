@@ -48,6 +48,7 @@ model textPrompt {
 model account {
     id             String        @id @default(cuid())
     userId         String
+    email          String
     organizationId String?
     organization   organization? @relation(fields: [organizationId], references: [id])
 }

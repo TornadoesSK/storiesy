@@ -1,7 +1,6 @@
-import { type organization } from "@prisma/client";
 import { z } from "zod";
 import { Form } from "../../components/form/Form";
-import { api } from "../../utils/api";
+import { api, type RouterOutputs } from "../../utils/api";
 
 export default function Organization() {
 	const organization = api.organization.get.useQuery();
@@ -16,7 +15,17 @@ export default function Organization() {
 	);
 }
 
-function OrganizationDetail({ organization }: { organization: organization }) {
+const addOrganizationMemberSchema = z.object({
+	email: z.string().email(),
+});
+
+function OrganizationDetail({
+	organization,
+}: {
+	organization: NonNullable<RouterOutputs["organization"]["get"]>;
+}) {
+	const addMemberMutation = api.organization.addMember.useMutation();
+
 	return (
 		<div className="p-4">
 			<h1>Organization detail</h1>
@@ -25,6 +34,27 @@ function OrganizationDetail({ organization }: { organization: organization }) {
 			</div>
 			<div>
 				<span className="font-medium">Color:</span> {organization.color}
+			</div>
+			<div>
+				<span className="font-medium">Members:</span>
+				<ul>
+					{organization.account.map((member, idx) => (
+						<li key={`${member}${idx}`}>{member.email}</li>
+					))}
+				</ul>
+			</div>
+			<div>
+				Add members
+				<Form
+					schema={addOrganizationMemberSchema}
+					onSubmit={async (output) => {
+						const result = await addMemberMutation.mutateAsync({ email: output.email });
+						if (result) {
+							location.reload();
+						}
+					}}
+				/>
+				{addMemberMutation.isLoading && <p>Loading...</p>}
 			</div>
 		</div>
 	);
