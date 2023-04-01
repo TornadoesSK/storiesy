@@ -6,6 +6,7 @@ import { appStateContext, useApp } from "../components/useAppState";
 import { useRouter } from "next/router";
 import { useCallback } from "react";
 import DrawerSide from "../components/nav/DrawerSide";
+import { hexToHSL } from "../utils/hexToHsl";
 
 const sidebarId = "sidebar-menu";
 
@@ -16,6 +17,9 @@ const MyApp: AppType = ({ Component, pageProps }) => {
 		await appState.supabaseClient.auth.signOut();
 		router.reload();
 	}, [router, appState.supabaseClient.auth]);
+
+	const organization = api.organization.get.useQuery();
+	organization?.data?.color && document.documentElement.style.setProperty("--p", hexToHSL(organization?.data?.color));
 
 	return (
 		<>
