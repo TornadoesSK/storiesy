@@ -36,8 +36,10 @@ model category {
 }
 
 model textPrompt {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    input     String
-    output    String
+    id           String   @id @default(cuid())
+    createdAt    DateTime @default(now())
+    input        String
+    output       String
+    error        String?
+    systemPrompt String
 }
