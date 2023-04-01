@@ -44,3 +44,17 @@ model textPrompt {
     imageUrls    String?
     systemPrompt String
 }
+
+model account {
+    id             String        @id @default(cuid())
+    userId         String
+    organizationId String?
+    organization   organization? @relation(fields: [organizationId], references: [id])
+}
+
+model organization {
+    id      String    @id @default(cuid())
+    name    String
+    color   String
+    account account[]
+}

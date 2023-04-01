@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { api } from "../../utils/api";
 
 export default function DrawerSide({
 	sidebarId,
@@ -10,6 +11,7 @@ export default function DrawerSide({
 	const closeDrawer = () => {
 		document.getElementById(sidebarId)?.click();
 	};
+	const organization = api.organization.get.useQuery();
 
 	return (
 		<div className="drawer-side">
@@ -20,13 +22,19 @@ export default function DrawerSide({
 						<SignOutIcon />
 					</span>
 				</li>
+				{organization.data && (
+					<li>
+						<Link href="/" className="flex-col items-center text-white" onClick={closeDrawer}>
+							<ChatIcon />
+							Generate
+						</Link>
+					</li>
+				)}
 				<li>
-					<Link href="/" className="flex-col items-center text-white" onClick={closeDrawer}>
-						<ChatIcon />
-						Chats
+					<Link className="flex-col items-center text-white" href="/organization">
+						<SignOutIcon />
+						Organization
 					</Link>
-				</li>
-				<li>
 					<span
 						className="flex-col items-center text-white"
 						onClick={() => {
