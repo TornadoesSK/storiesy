@@ -18,6 +18,7 @@
  */
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { prisma } from "../db";
+import { openai } from "../openai";
 import { type User } from "@supabase/supabase-js";
 import { getUser } from "../auth";
 
@@ -38,6 +39,7 @@ const createInnerTRPCContext = async (opts: CreateContextOptions) => {
 	return {
 		prisma,
 		user: opts.user,
+		openai,
 	};
 };
 

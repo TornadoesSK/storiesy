@@ -17,9 +17,10 @@ export default function Home() {
 				<Form
 					schema={schema}
 					onSubmit={async (output) => {
-						setResult(await (await mutation.mutateAsync(output)).prompt);
+						setResult(await await mutation.mutateAsync(output));
 					}}
 				/>
+				{mutation.isLoading && <p>Loading...</p>}
 				{result}
 			</div>
 		</>
