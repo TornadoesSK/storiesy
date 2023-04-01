@@ -12,8 +12,28 @@ fetcher.configure({
 	baseUrl: env.CUSTOM_IMAGE_MODEL_API_URL,
 });
 
-const basePrompt =
-	'Your task is to create stories based on the user prompt. The story will be in a comics format - it will have an image and some dialogue. You need to imagine 3 scenes from this comic. Create a prompt for the image generation AI Dall-E, be as detailed and consistent as possible, especially with the character descriptions. The image prompt must be extra long and verbose. You need to the scene in great detail, each character in it and what they are doing. At the start of each scene, you need to repeat each character description that is in that scene, because Dall-E doesn\'t know anything that happened in previous scenes. You also need to output the name of the character speaking and what they say. Provide all of this in JSON - the schema is `{ "scenes": [{ "imagePrompt": "string", "speechBubble": { "characterName": "string", "text": "string" } }] }`. If you need to use quotes, use apostrophes instead to not break the JSON. Do not output anything apart from the JSON';
+function generateBasePrompt({ sceneCount }: { sceneCount: number }) {
+	return `\
+Your task is to create stories based on the user prompt.\
+The story will be in a comics format - it will have an image and some dialogue.\
+The whole story must be understandable for the reader only based on the dialogue.
+
+You need to imagine ${sceneCount} scenes from this comic.\
+Create a prompt for an image generation AI, like DallE or Stable Diffusion.\
+For each scene, list all important characters (not characters in the background).\
+For each scene, output the name of the character speaking and what they say.\
+
+Provide all of this in JSON - the schema is\
+\`{ "scenes":\
+	[{ "imagePrompt": "string",\
+	"speechBubble": { "characterName": "string", "text": "string" },\
+	"charactersShown" [ "string" ]\
+}],\
+"characterDescriptions": [{ "characterName": "string", "verboseDescription": "string" }]\
+}\`.\
+If you need to use quotes, use apostrophes instead to not break the JSON.\
+Do not output anything apart from the JSON.`;
+}
 
 const textOutputSchema = z.object({
 	scenes: z.array(
@@ -25,6 +45,13 @@ const textOutputSchema = z.object({
 					text: z.string(),
 				})
 				.optional(),
+			charactersShown: z.array(z.string()),
+		}),
+	),
+	characterDescriptions: z.array(
+		z.object({
+			characterName: z.string(),
+			verboseDescription: z.string(),
 		}),
 	),
 });
@@ -35,10 +62,13 @@ export const generateRouter = createTRPCRouter({
 			z.object({
 				prompt: z.string(),
 				model: z.enum(["dalle", "stablediffusion"]),
+				sceneCount: z.number(),
+				hardLimit: z.number().optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const chatOutput = await promptChat(ctx.openai, input.prompt);
+			const basePrompt = generateBasePrompt({ sceneCount: input.sceneCount });
+			const chatOutput = await promptChat(ctx.openai, basePrompt, input.prompt);
 
 			async function saveToDb(
 				extraProps: Partial<Omit<textPrompt, "input" | "output" | "systemPrompt">>,
@@ -59,15 +89,20 @@ export const generateRouter = createTRPCRouter({
 				throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: processedChatOutput.error });
 			}
 
-			console.log("Prompting Dall-E for images");
-			const promises = processedChatOutput.data.scenes.map(async (scene) => {
-				return {
-					...scene,
-					imageSrc: await (input.model === "dalle"
-						? promptImageDalle(ctx.openai, scene.imagePrompt)
-						: promptImageStableDiffusion(scene.imagePrompt)),
-				};
-			});
+			const promises = processedChatOutput.data.scenes
+				.slice(0, input.hardLimit)
+				.map(async (scene) => {
+					return {
+						...scene,
+						// imageSrc: {
+						// 	type: "url",
+						// 	url: "https://picsum.photos/1024/1024",
+						// },
+						imageSrc: await (input.model === "dalle"
+							? promptImageDalle(ctx.openai, scene.imagePrompt)
+							: promptImageStableDiffusion(scene.imagePrompt)),
+					};
+				});
 
 			const result = await Promise.all(promises);
 			await saveToDb({ imageUrls: JSON.stringify(result.map((scene) => scene.imageSrc)) });
@@ -76,7 +111,7 @@ export const generateRouter = createTRPCRouter({
 		}),
 });
 
-async function promptChat(openai: OpenAIApi, prompt: string) {
+async function promptChat(openai: OpenAIApi, basePrompt: string, prompt: string) {
 	console.log("Prompting ChatGPT for dialogue and image prompts...");
 	const completion = await openai.createChatCompletion({
 		model: "gpt-3.5-turbo",
@@ -103,6 +138,7 @@ type ImagePromptOutput =
 	  };
 
 async function promptImageDalle(openai: OpenAIApi, prompt: string): Promise<ImagePromptOutput> {
+	console.log("Prompting Dall-E for images");
 	return {
 		type: "url",
 		url: (
@@ -117,9 +153,31 @@ async function promptImageDalle(openai: OpenAIApi, prompt: string): Promise<Imag
 }
 
 async function promptImageStableDiffusion(prompt: string): Promise<ImagePromptOutput> {
-	const fetch = fetcher.path("/sdapi/v1/txt2img").method("post").create();
-	const result = await fetch({ prompt });
-	return { type: "base64", data: result.data.images?.[0] };
+	console.log("Prompting Stable Diffusion for images");
+	const loginResponse = await fetch(`${env.CUSTOM_IMAGE_MODEL_API_URL}/login`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/x-www-form-urlencoded",
+		},
+		body: `username=admin&password=${env.CUSTOM_IMAGE_MODEL_API_PASSWORD}`,
+	});
+	const cookie = loginResponse.headers.get("set-cookie");
+	if (!cookie) {
+		throw new Error("Failed to get cookie from login response");
+	}
+
+	const promptResponse = await fetch(`${env.CUSTOM_IMAGE_MODEL_API_URL}/sdapi/v1/txt2img`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			Cookie: cookie,
+		},
+		body: JSON.stringify({ prompt }),
+	});
+	if (!promptResponse.ok) {
+		throw new Error(`Failed to send prompt: ${promptResponse.status} ${promptResponse.statusText}`);
+	}
+	return { type: "base64", data: (await promptResponse.json()).images?.[0] };
 }
 
 function parseChatOutput(output: string) {
@@ -138,5 +196,15 @@ function parseChatOutput(output: string) {
 		return { success: false as const, error: JSON.stringify(parseResult.error.issues) };
 	}
 
-	return { success: true as const, data: parseResult.data };
+	const scenes = parseResult.data.scenes.map((scene) => {
+		const characterDescriptions = scene.charactersShown.map((character) => {
+			const description = parseResult.data.characterDescriptions.find(
+				(desc) => desc.characterName === character,
+			)?.verboseDescription;
+			return `${character} is ${description}`;
+		});
+		return { ...scene, imagePrompt: `${scene.imagePrompt}${characterDescriptions.join(". ")}` };
+	});
+
+	return { success: true as const, data: { scenes } };
 }

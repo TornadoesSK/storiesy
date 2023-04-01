@@ -11,6 +11,7 @@ export const serverSchema = z.object({
 	OPENAI_API_KEY: z.string(),
 	OPENAI_ORGANIZATION_NAME: z.string(),
 	CUSTOM_IMAGE_MODEL_API_URL: z.string().url(),
+	CUSTOM_IMAGE_MODEL_API_PASSWORD: z.string(),
 });
 
 /**

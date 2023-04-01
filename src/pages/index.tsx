@@ -4,7 +4,12 @@ import { z } from "zod";
 import { Form } from "../components/form/Form";
 import { api, type RouterOutputs } from "../utils/api";
 
-const schema = z.object({ prompt: z.string(), model: z.enum(["dalle", "stablediffusion"]) });
+const schema = z.object({
+	prompt: z.string(),
+	model: z.enum(["dalle", "stablediffusion"]),
+	sceneCount: z.number(),
+	hardLimit: z.number(),
+});
 
 export default function Home() {
 	const mutation = api.generate.single.useMutation();
@@ -41,7 +46,12 @@ export default function Home() {
 								) : (
 									<>
 										{scene.imageSrc.data ? (
-											<Image src={scene.imageSrc.data} alt="AI generated image" />
+											<Image
+												src={`data:image/png;base64,${scene.imageSrc.data}`}
+												alt="AI generated image"
+												width={512}
+												height={512}
+											/>
 										) : (
 											"malformed data"
 										)}
