@@ -13,7 +13,7 @@ const textOutputSchema = z.object({
 			imagePrompt: z.string(),
 			speechBubble: z
 				.object({
-					characterName: z.string().nullable(),
+					characterName: z.string().nullish(),
 					text: z.string(),
 				})
 				.optional(),
