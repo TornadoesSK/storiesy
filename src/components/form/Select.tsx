@@ -4,16 +4,32 @@ import { type ReactNode } from "react";
 type SelectProps = {
 	options: string[];
 	labelMap?: Record<string, ReactNode>;
+	className?: string;
+	disabled?: boolean;
+	labelText?: string;
+	wrapperClassName?: string;
 };
-export function Select({ options, labelMap }: SelectProps) {
+export function Select({
+	options,
+	labelMap,
+	className,
+	disabled,
+	labelText,
+	wrapperClassName,
+}: SelectProps) {
 	const { field, error } = useTsController<string>();
 
 	return (
-		<>
+		<div className={wrapperClassName}>
+			{labelText && <label className="mb-2 inline-block text-neutral">{labelText}</label>}
 			<select
 				value={field.value ? field.value : ""}
 				onChange={(e) => field.onChange(e.target.value || undefined)}
-				className="select-bordered select"
+				className={
+					"select-bordered select w-full bg-white text-neutral shadow-lg focus:border-primary focus:outline-0 disabled:border-gray-300 disabled:bg-gray-300 disabled:text-white " +
+					className
+				}
+				disabled={disabled}
 			>
 				<option value="">Choose an option</option>
 				{options.map((option) => (
@@ -23,6 +39,6 @@ export function Select({ options, labelMap }: SelectProps) {
 				))}
 			</select>
 			{error && <span>{error.errorMessage}</span>}
-		</>
+		</div>
 	);
 }

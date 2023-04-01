@@ -27,8 +27,8 @@ function OrganizationDetail({
 	const addMemberMutation = api.organization.addMember.useMutation();
 
 	return (
-		<div className="p-4">
-			<h1>Organization detail</h1>
+		<div className="p-8">
+			<h1 className="text-4xl text-neutral">Organization detail</h1>
 			<div>
 				<span className="font-medium">Name:</span> {organization.name}
 			</div>

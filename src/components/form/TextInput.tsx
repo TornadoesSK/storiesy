@@ -1,20 +1,29 @@
 import { useTsController } from "@ts-react/form";
 
 type TextInputProps = {
-	placeholder?: string,
-	className?: string,
-	disabled?: boolean,
-	labelText?: string,
-	wrapperClassName?: string
-}
+	placeholder?: string;
+	className?: string;
+	disabled?: boolean;
+	labelText?: string;
+	wrapperClassName?: string;
+};
 
-export const TextInput = ({placeholder, className, disabled, labelText, wrapperClassName}: TextInputProps) => {
+export const TextInput = ({
+	placeholder,
+	className,
+	disabled,
+	labelText,
+	wrapperClassName,
+}: TextInputProps) => {
 	const { field, error } = useTsController<string>();
 	return (
 		<div className={wrapperClassName}>
-			{labelText && <label className="text-neutral mb-2 inline-block">{labelText}</label>}
+			{labelText && <label className="mb-2 inline-block text-neutral">{labelText}</label>}
 			<input
-				className={"input-bordered input " + className}
+				className={
+					"input-bordered input w-full bg-white text-neutral shadow-lg focus:border-primary focus:outline-0 disabled:border-gray-300 disabled:bg-gray-300 disabled:text-white " +
+					className
+				}
 				placeholder={placeholder || field.name}
 				value={field.value ? field.value : ""}
 				onChange={(e) => {
