@@ -16,19 +16,19 @@ export default function DrawerSide({
 			<label htmlFor={sidebarId} className="drawer-overlay"></label>
 			<ul className="menu items-center justify-between bg-base-100 p-4 text-base-content">
 				<li>
-					<span className="flex-col items-center">
+					<span className="flex-col items-center text-white">
 						<SignOutIcon />
 					</span>
 				</li>
 				<li>
-					<Link href="/" className="flex-col items-center" onClick={closeDrawer}>
+					<Link href="/" className="flex-col items-center text-white" onClick={closeDrawer}>
 						<ChatIcon />
 						Chats
 					</Link>
 				</li>
 				<li>
 					<span
-						className="flex-col items-center"
+						className="flex-col items-center text-white"
 						onClick={() => {
 							handleSignOutClick();
 							closeDrawer();

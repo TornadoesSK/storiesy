@@ -27,10 +27,10 @@ const MyApp: AppType = ({ Component, pageProps }) => {
 				</Head>
 				<div className="drawer-mobile drawer">
 					<input id={sidebarId} type="checkbox" className="drawer-toggle" />
-					<div className="drawer-content flex flex-col items-center justify-center bg-white">
-						<label htmlFor={sidebarId} className="btn-primary drawer-button btn lg:hidden">
+					<div className="drawer-content bg-white">
+						{/* <label htmlFor={sidebarId} className="btn-primary drawer-button btn lg:hidden">
 							Open drawer
-						</label>
+						</label> */}
 						<appStateContext.Provider value={appState}>
 							<Component {...pageProps} />
 						</appStateContext.Provider>
