@@ -70,6 +70,14 @@ export default function Home() {
 							)}
 						</div>
 					))}
+					{result?.comic && (
+							<Image
+								src={result.comic}
+								alt="AI generated comic"
+								width={512}
+								height={512}
+							/>
+					)}
 				</div>
 				<Form
 					schema={schema}

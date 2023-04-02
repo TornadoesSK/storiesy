@@ -5,6 +5,8 @@ import { type OpenAIApi } from "openai";
 import { type paths } from "../../../utils/customModelApiSchema";
 import { Fetcher } from "openapi-typescript-fetch";
 import { env } from "../../../env/server.mjs";
+import mergeImages from 'merge-base64';
+import { Canvas } from '@napi-rs/canvas';
 
 const fetcher = Fetcher.for<paths>();
 fetcher.configure({
@@ -109,6 +111,9 @@ export const generateRouter = createTRPCRouter({
 				};
 			});
 			const result = await Promise.all(promises);
+			//const mergedImageB64 = await mergeImagesIntoComic(result);
+			console.log("Merged items horizontally!");
+
 			// log to db
 			await ctx.prisma.imagePrompt.create({
 				data: {
@@ -116,9 +121,75 @@ export const generateRouter = createTRPCRouter({
 					output: JSON.stringify(result),
 				},
 			});
-			return { scenes: result };
+			return { scenes: result, comic: null };
 		}),
 });
+
+async function addTextToImage(base64String: string | undefined, text: string): Promise<string> {
+	// Create a new Image object and set its src to the Base64 string
+	console.log("Starttttttt")
+	const img = new Image();
+	img.src = 'data:image/png;base64,' + base64String;
+  
+	// Wait for the image to load before drawing it on the canvas
+	await new Promise((resolve, reject) => {
+	  img.onload = () => resolve(true);
+	  img.onerror = reject;
+	});
+  
+	console.log("After promise")
+	// Create a new canvas with the same size as the image
+	const canvas = new Canvas(img.width, img.height + 50); // add 50 pixels for the text
+  
+	// Get the 2D rendering context
+	const ctx = canvas.getContext('2d');
+  
+	// Create a new Canvas.Image object and set its data to the img object's src property
+	console.log("Create canvas img")
+	const canvasImg = canvas.createImage();
+	canvasImg.src = img.src;
+	console.log("created cnvas obrazok")
+  
+	// Draw the image on the canvas
+	ctx.drawImage(canvasImg, 0, 0);
+  
+	// Set the font and text properties
+	ctx.font = '24px Arial';
+	ctx.fillStyle = 'red';
+	ctx.textAlign = 'center';
+  
+	// Draw the text below the image
+	const textX = img.width / 2;
+	const textY = img.height + 30; // adjust as needed
+	ctx.fillText(text, textX, textY);
+  
+	// Get the canvas data as a Base64 string
+	const result = canvas.toBuffer('image/png').toString('base64');
+  
+	// Return the Base64 string
+	return result;
+  }
+
+async function mergeImagesIntoComic(result: string | any[]) {
+	const verticalB64: any[] = [];
+
+	for (let i = 0; i < result.length; i += 2) {
+
+		if (i + 1 < result.length) {
+			const mergedImage = await mergeImages([result[i].imageSrc.data, result[i + 1].imageSrc.data]);
+			verticalB64.push(mergedImage);
+		} else {
+			verticalB64.push(result[i].imageSrc.data);
+		}
+	}
+
+	console.log("Merged items vertically!");
+	
+	// result is in base64
+	const toReturn = await mergeImages(verticalB64);
+	console.log("Merged items horrizontally first");
+	return toReturn;
+}
 
 async function promptChat(openai: OpenAIApi, basePrompt: string, prompt: string) {
 	console.log("Prompting ChatGPT for dialogue and image prompts...");
@@ -148,7 +219,7 @@ type ImagePromptOutput =
 
 async function promptImageDalle(openai: OpenAIApi, prompt: string): Promise<ImagePromptOutput> {
 	console.log("Prompting Dall-E for images");
-	return {
+	const dataImage = {
 		type: "base64",
 		data: (
 			await openai.createImage({
@@ -159,6 +230,12 @@ async function promptImageDalle(openai: OpenAIApi, prompt: string): Promise<Imag
 			})
 		).data.data[0]?.b64_json,
 	};
+
+	console.log("START GENERATING TEXT")
+	dataImage.data = await addTextToImage(dataImage.data, "test string");
+
+	console.log("GENERATED TEXT")
+	return dataImage;
 }
 
 async function promptImageStableDiffusion(prompt: string): Promise<ImagePromptOutput> {
