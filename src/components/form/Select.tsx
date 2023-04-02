@@ -21,12 +21,12 @@ export function Select({
 
 	return (
 		<div className={wrapperClassName}>
-			{labelText && <label className="mb-2 inline-block text-neutral">{labelText}</label>}
+			{labelText && <label className={`mb-2 inline-block text-neutral ${error && "text-error"}`}>{labelText}</label>}
 			<select
 				value={field.value ? field.value : ""}
 				onChange={(e) => field.onChange(e.target.value || undefined)}
 				className={
-					"select-bordered select w-full bg-white text-neutral font-normal text-base shadow-lg focus:border-primary focus:outline-0 disabled:border-gray-300 disabled:bg-gray-300 disabled:text-gray-400 " +
+					`select-bordered select w-full bg-white text-neutral font-normal text-base shadow-lg shadow-lg ${error && "border-error"} focus:border-primary focus:outline-0 disabled:border-gray-300 disabled:bg-gray-300 disabled:text-gray-400 ` +
 					className
 				}
 				disabled={disabled}
@@ -38,7 +38,6 @@ export function Select({
 					</option>
 				))}
 			</select>
-			{error && <span>{error.errorMessage}</span>}
 		</div>
 	);
 }

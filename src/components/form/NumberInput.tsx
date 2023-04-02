@@ -18,10 +18,10 @@ export const NumberInput = ({
 	const { field, error } = useTsController<number>();
 	return (
 		<div className={wrapperClassName}>
-			{labelText && <label className="mb-2 inline-block text-neutral">{labelText}</label>}
+			{labelText && <label className={`mb-2 inline-block text-neutral ${error && "text-error"}`}>{labelText}</label>}
 			<input
 				className={
-					"input-bordered input w-full bg-white text-neutral shadow-lg focus:border-primary focus:outline-0 disabled:border-gray-300 disabled:bg-gray-300 disabled:text-gray-400 " +
+					`input-bordered input w-full bg-white text-neutral shadow-lg ${error && "border-error"} focus:border-primary focus:outline-0 disabled:border-gray-300 disabled:bg-gray-300 disabled:text-gray-400 ` +
 					className
 				}
 				type="number"
@@ -34,7 +34,6 @@ export const NumberInput = ({
 				}}
 				disabled={disabled}
 			/>
-			{error && <span>{error.errorMessage}</span>}
 		</div>
 	);
 };
