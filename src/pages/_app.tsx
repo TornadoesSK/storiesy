@@ -28,7 +28,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
 				<Head>
 					<title>Storiesy</title>
 					<meta name="description" content="Comics creation using AI" />
-					<link rel="icon" href="/favicon.ico" />
+					<link rel="icon" href="/favicon.png" />
 				</Head>
 				<appStateContext.Provider value={appState}>
 					<div className="drawer-mobile drawer">

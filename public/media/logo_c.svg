@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="49.999996mm"
+   height="50.000008mm"
+   viewBox="0 0 49.999996 50.000008"
+   version="1.1"
+   id="svg1420"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1422"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false" />
+  <defs
+     id="defs1417" />
+  <g
+     inkscape:label="Vrstva 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-17.111119,-108.65558)">
+    <rect
+       style="fill:none;fill-opacity:1;stroke-width:0.130365"
+       id="rect2963"
+       width="50"
+       height="50"
+       x="17.111118"
+       y="108.65559"
+       inkscape:export-filename="logo_c.svg"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <g
+       id="g3027"
+       transform="matrix(1.6231405,0,0,1.6231405,-26.644997,-82.08686)"
+       inkscape:export-filename="favicon.png"
+       inkscape:export-xdpi="260.09601"
+       inkscape:export-ydpi="260.09601">
+      <path
+         d="m 43.361816,143.07669 c 3.019776,0 4.910663,-1.12889 6.688662,-2.96333 l -2.455331,-2.90689 c -1.326444,1.32644 -2.483554,2.06022 -4.063997,2.06022 -2.624665,0 -4.656663,-2.39889 -4.656663,-6.32177 v -0.0847 c 0,-3.83822 1.947331,-6.29355 4.600218,-6.29355 1.608666,0 2.850443,0.762 4.035775,1.97555 l 2.455331,-3.16088 c -1.523998,-1.55222 -3.414886,-2.62467 -6.349995,-2.62467 -5.221107,0 -8.946437,4.064 -8.946437,10.04711 v 0.25399 c 0,6.03956 3.499553,10.01889 8.692437,10.01889 z"
+         style="font-stretch:condensed;font-size:28.2222px;font-family:'Gotham Narrow';-inkscape-font-specification:'Gotham Narrow Condensed';fill:#ffffff;fill-opacity:1;stroke-width:0.264583"
+         id="path1428" />
+    </g>
+  </g>
+</svg>

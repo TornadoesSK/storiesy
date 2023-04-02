@@ -3,13 +3,15 @@ import { useEffect, useState } from "react";
 import { api } from "../../utils/api";
 import { useAppState } from "../useAppState";
 
+type DrawerSideProps = {
+	sidebarId: string;
+	handleSignOutClick: () => Promise<void>,
+}
+
 export default function DrawerSide({
 	sidebarId,
 	handleSignOutClick,
-}: {
-	sidebarId: string;
-	handleSignOutClick: () => Promise<void>;
-}) {
+}: DrawerSideProps) {
 	const closeDrawer = () => {
 		document.getElementById(sidebarId)?.click();
 	};
@@ -27,9 +29,9 @@ export default function DrawerSide({
 			<label htmlFor={sidebarId} className="drawer-overlay"></label>
 			<ul className="menu items-center justify-between bg-primary p-4 text-base-content">
 				<li>
-					<span className="flex-col items-center text-white">
-						<SignOutIcon />
-					</span>
+					<Link className="flex-col items-center text-white w-28" href="/" onClick={closeDrawer}>
+						<img className="w-full" src="/media/logo_c.svg" alt="logo small" />
+					</Link>
 				</li>
 				{organization.data && (
 					<li>
@@ -41,7 +43,7 @@ export default function DrawerSide({
 				)}
 				<li>
 					{signedIn && (
-						<Link className="flex-col items-center text-white" href="/organization">
+						<Link className="flex-col items-center text-white" href="/organization" onClick={closeDrawer}>
 							<OrgIcon />
 							Organization
 						</Link>
@@ -58,7 +60,7 @@ export default function DrawerSide({
 							Sign out
 						</span>
 					) : (
-						<Link className="flex-col items-center text-white" href="/auth/sign-in">
+						<Link className="flex-col items-center text-white" href="/auth/sign-in" onClick={closeDrawer}>
 							<SignInIcon />
 							Sign in
 						</Link>
@@ -98,7 +100,7 @@ const SignInIcon = () => (
 		fill="currentColor"
 		viewBox="0 0 512 512"
 	>
-		<path d="M352 96l64 0c17.7 0 32 14.3 32 32l0 256c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0c53 0 96-43 96-96l0-256c0-53-43-96-96-96l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32zm-9.4 182.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L242.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128z"/>
+		<path d="M352 96l64 0c17.7 0 32 14.3 32 32l0 256c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0c53 0 96-43 96-96l0-256c0-53-43-96-96-96l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32zm-9.4 182.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L242.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128z" />
 	</svg>
 );
 
