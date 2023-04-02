@@ -26,7 +26,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
 		<>
 			<main>
 				<Head>
-					<title>Storiesy</title>
+					<title>Comicraft AI Generator</title>
 					<meta name="description" content="Comics creation using AI" />
 					<link rel="icon" href="/favicon.png" />
 				</Head>
