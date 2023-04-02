@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { type ParsedUrlQuery } from "querystring";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Form } from "../../components/form/Form";
 import { env } from "../../env/client.mjs";
@@ -24,7 +24,11 @@ export default function SignIn() {
 
 	const redirectedFrom = parseSearchParams(router.query)?.redirectedFrom;
 
-	// TODO: Redirect to root if already signed in
+	useEffect(() => {
+		(async () => {
+			if ((await supabaseClient.auth.getUser()).data.user !== null) router.push("/");
+		})();
+	}, [router, supabaseClient.auth]);
 
 	return (
 		<div>

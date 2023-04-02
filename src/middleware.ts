@@ -15,11 +15,11 @@ export async function middleware(req: NextRequest) {
 	}
 
 	const redirectUrl = req.nextUrl.clone();
-	redirectUrl.pathname = "/auth/sign-in";
+	redirectUrl.pathname = "/landing";
 	redirectUrl.searchParams.set(`redirectedFrom`, req.nextUrl.pathname);
 	return NextResponse.redirect(redirectUrl);
 }
 
 export const config = {
-	matcher: "/",
+	matcher: ["/", "/organization", "/auth/sign-in"],
 };
