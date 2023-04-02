@@ -5,13 +5,10 @@ import { useAppState } from "../useAppState";
 
 type DrawerSideProps = {
 	sidebarId: string;
-	handleSignOutClick: () => Promise<void>,
-}
+	handleSignOutClick: () => Promise<void>;
+};
 
-export default function DrawerSide({
-	sidebarId,
-	handleSignOutClick,
-}: DrawerSideProps) {
+export default function DrawerSide({ sidebarId, handleSignOutClick }: DrawerSideProps) {
 	const closeDrawer = () => {
 		document.getElementById(sidebarId)?.click();
 	};
@@ -29,7 +26,8 @@ export default function DrawerSide({
 			<label htmlFor={sidebarId} className="drawer-overlay"></label>
 			<ul className="menu items-center justify-between bg-primary p-4 text-base-content">
 				<li>
-					<Link className="flex-col items-center text-white w-28" href="/" onClick={closeDrawer}>
+					<Link className="w-28 flex-col items-center text-white" href="/" onClick={closeDrawer}>
+						{/*  eslint-disable-next-line @next/next/no-img-element */}
 						<img className="w-full" src="/media/logo_c.svg" alt="logo small" />
 					</Link>
 				</li>
@@ -43,7 +41,11 @@ export default function DrawerSide({
 				)}
 				<li>
 					{signedIn && (
-						<Link className="flex-col items-center text-white" href="/organization" onClick={closeDrawer}>
+						<Link
+							className="flex-col items-center text-white"
+							href="/organization"
+							onClick={closeDrawer}
+						>
 							<OrgIcon />
 							Organization
 						</Link>
@@ -60,7 +62,11 @@ export default function DrawerSide({
 							Sign out
 						</span>
 					) : (
-						<Link className="flex-col items-center text-white" href="/auth/sign-in" onClick={closeDrawer}>
+						<Link
+							className="flex-col items-center text-white"
+							href="/auth/sign-in"
+							onClick={closeDrawer}
+						>
 							<SignInIcon />
 							Sign in
 						</Link>

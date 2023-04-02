@@ -31,7 +31,7 @@ export default function Home() {
 	const loading = configMutation.isLoading || imagesMutation.isLoading;
 	const organization = api.organization.get.useQuery();
 	const router = useRouter();
-	const [images, setImages] = useState<typeof imagesMutation.data>();
+	const [_images, setImages] = useState<typeof imagesMutation.data>();
 	const [fullImage, setFullImage] = useState<string>();
 	const [retried, setRetried] = useState(false);
 	const editForm = useForm({
@@ -73,7 +73,9 @@ export default function Home() {
 					<Form
 						form={editForm}
 						schema={editSchema}
-						onSubmit={async (output) => {}}
+						onSubmit={async (output) => {
+							console.log(output);
+						}}
 						formProps={{ showSubmitButton: true }}
 					/>
 				</div>

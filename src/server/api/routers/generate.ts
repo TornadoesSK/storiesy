@@ -5,7 +5,7 @@ import { type OpenAIApi } from "openai";
 import { type paths } from "../../../utils/customModelApiSchema";
 import { Fetcher } from "openapi-typescript-fetch";
 import { env } from "../../../env/server.mjs";
-import { joinImages, processImage } from "../../../utils/images";
+import { processImage } from "../../../utils/images";
 import { isTruthy } from "../../../utils/isTruthy";
 
 const fetcher = Fetcher.for<paths>();
@@ -103,16 +103,18 @@ export const generateRouter = createTRPCRouter({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const promises = input.scenes.slice(0, input.sceneLimit).map(async (scene) => {
+				const imagePrompt = `${scene.imagePrompt}. Photorealistic. 4k beautiful photography.`;
 				try {
-					const image = await promptImage(ctx.openai, scene.imagePrompt, input.model);
+					const image = await promptImage(ctx.openai, imagePrompt, input.model);
 					return image.data
 						? {
 								image: await processImage(image.data, scene.speechBubble),
 								speechBubble: scene.speechBubble,
+								imagePrompt,
 						  }
 						: null;
 				} catch (e) {
-					console.log(`Failed at processing prompt: ${scene.imagePrompt}`);
+					console.log(`Failed at processing prompt: ${imagePrompt}`);
 					throw e;
 				}
 			});
@@ -154,10 +156,9 @@ type ImagePromptOutput = {
 
 async function promptImage(openai: OpenAIApi, prompt: string, model: "dalle" | "stablediffusion") {
 	try {
-		const imagePrompt = `${prompt}. Photorealistic. 4k beautiful photography.`;
 		return await (model === "dalle"
-			? promptImageDalle(openai, imagePrompt)
-			: promptImageStableDiffusion(imagePrompt));
+			? promptImageDalle(openai, prompt)
+			: promptImageStableDiffusion(prompt));
 	} catch (e) {
 		console.log(`Failed at image prompt: ${prompt}`);
 		throw e;
