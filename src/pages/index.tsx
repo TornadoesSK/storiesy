@@ -74,7 +74,11 @@ export default function Home() {
 							sceneCount: output.sceneCount,
 						});
 						console.log(config);
-						const result = await imagesMutation.mutateAsync({ ...config, model: output.model });
+						const result = await imagesMutation.mutateAsync({
+							...config,
+							model: output.model,
+							sceneLimit: output.sceneCount,
+						});
 						setResult(result);
 					}}
 					props={{
@@ -95,7 +99,11 @@ export default function Home() {
 							placeholder: "Number",
 						},
 					}}
-					formProps={{ className: "w-full flex items-end gap-2", hasSubmitButton: true, loading: loading }}
+					formProps={{
+						className: "w-full flex items-end gap-2",
+						hasSubmitButton: true,
+						loading: loading,
+					}}
 				/>
 			</div>
 		</>
