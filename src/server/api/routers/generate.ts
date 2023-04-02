@@ -7,13 +7,18 @@ import { Fetcher } from "openapi-typescript-fetch";
 import { env } from "../../../env/server.mjs";
 import { processImage } from "../../../utils/images";
 import { isTruthy } from "../../../utils/isTruthy";
+import { GetColorName } from "hex-color-to-color-name";
 
 const fetcher = Fetcher.for<paths>();
 fetcher.configure({
 	baseUrl: env.CUSTOM_IMAGE_MODEL_API_URL,
 });
 
-function generateBasePrompt({ sceneCount }: { sceneCount: number }) {
+function generateBasePrompt({ sceneCount, orgName, color }: { sceneCount: number, orgName: string, color: string }) {
+	const colorPrompt = `\
+	In the prompt use the primary color ${color} for color of clothes or furniture.\
+	In the prompt everytime you mention building or room use the primary color with it.\
+	`;
 	return `\
 Your task is to create stories based on the user prompt.\
 The story will be in a comics format - it will have an image and some dialogue.\
@@ -21,14 +26,16 @@ The whole story must be understandable for the reader only based on the dialogue
 
 You need to imagine ${sceneCount} scenes from this comic.\
 Create a prompt for an image generation AI, like DallE or Stable Diffusion.\
+${color.length > 0 ? colorPrompt : ""}
 For each scene, list all important characters (not characters in the background).\
 For each scene, output the name of the character speaking and what they say.\
+Characters should mention the organization ${orgName} in their speech.\
 
 Provide all of this in JSON - the schema is\
 \`{ "scenes":\
 	[{ "imagePrompt": "string",\
 	"speechBubble": { "characterName": "string", "text": "string" },\
-	"charactersShown" [ "string" ]\
+	"charactersShown": [ "string" ],\
 }],\
 "characterDescriptions": [{ "characterName": "string", "verboseDescription": "string" }]\
 }\`.\
@@ -66,7 +73,17 @@ export const generateRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const basePrompt = generateBasePrompt({ sceneCount: input.sceneCount });
+			const account = await ctx.prisma.account.findFirstOrThrow({
+				where: { userId: ctx.user.id },
+			});
+			const organization = await ctx.prisma.organization.findFirstOrThrow({
+				where: { id: account.organizationId! },
+			});
+			let colorNameString = GetColorName(organization.color);
+			if (colorNameString === undefined || colorNameString === null || !colorNameString) {
+				colorNameString = "";
+			}
+			const basePrompt = generateBasePrompt({ sceneCount: input.sceneCount, orgName: organization.name, color: colorNameString });
 			const chatOutput = await promptChat(ctx.openai, basePrompt, input.prompt);
 			const processedChatOutput = parseChatOutput(chatOutput);
 			// log to db
