@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { api } from "../../utils/api";
+import { useAppState } from "../useAppState";
 
 export default function DrawerSide({
 	sidebarId,
@@ -12,6 +14,13 @@ export default function DrawerSide({
 		document.getElementById(sidebarId)?.click();
 	};
 	const organization = api.organization.get.useQuery();
+	const appState = useAppState();
+	const [signedIn, setSignedIn] = useState(false);
+	useEffect(() => {
+		(async () => {
+			setSignedIn((await appState.supabaseClient.auth.getUser()).data.user !== null);
+		})();
+	});
 
 	return (
 		<div className="drawer-side">
@@ -31,20 +40,29 @@ export default function DrawerSide({
 					</li>
 				)}
 				<li>
-					<Link className="flex-col items-center text-white" href="/organization">
-						<OrgIcon />
-						Organization
-					</Link>
-					<span
-						className="flex-col items-center text-white"
-						onClick={() => {
-							handleSignOutClick();
-							closeDrawer();
-						}}
-					>
-						<SignOutIcon />
-						Sign out
-					</span>
+					{signedIn && (
+						<Link className="flex-col items-center text-white" href="/organization">
+							<OrgIcon />
+							Organization
+						</Link>
+					)}
+					{signedIn ? (
+						<span
+							className="flex-col items-center text-white"
+							onClick={() => {
+								handleSignOutClick();
+								closeDrawer();
+							}}
+						>
+							<SignOutIcon />
+							Sign out
+						</span>
+					) : (
+						<Link className="flex-col items-center text-white" href="/auth/sign-in">
+							<OrgIcon />
+							Sign in
+						</Link>
+					)}
 				</li>
 			</ul>
 		</div>
