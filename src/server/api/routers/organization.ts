@@ -60,12 +60,6 @@ export const organizationRouter = createTRPCRouter({
 			const account = await ctx.prisma.account.findFirstOrThrow({
 				where: { userId: ctx.user.id },
 			});
-			if (!!account.organizationId !== !input.organizationId) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "You are already a member of an organization",
-				});
-			}
 			await ctx.prisma.account.update({
 				data: { organizationId: input.organizationId },
 				where: { id: account.id },
