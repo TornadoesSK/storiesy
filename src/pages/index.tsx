@@ -1,8 +1,9 @@
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Form } from "../components/form/Form";
 import { api, type RouterOutputs } from "../utils/api";
+import { useRouter } from "next/router";
 
 const schema = z.object({
 	prompt: z.string(),
@@ -16,6 +17,14 @@ export default function Home() {
 	const [result, setResult] = useState<RouterOutputs["generate"]["images"]>();
 	const loading = configMutation.isLoading || imagesMutation.isLoading;
 	const organization = api.organization.get.useQuery();
+	const router = useRouter();
+
+	useEffect(() => {
+		if (organization.data === null) {
+			router.push("/organization");
+		}
+	}, [organization.data, router]);
+
 	return (
 		<>
 			<div className="flex h-full flex-col justify-between p-8">
@@ -94,19 +103,19 @@ export default function Home() {
 							disabled: loading,
 							labelText: "Comic main character and story description",
 							wrapperClassName: "grow",
-							className: "w-full"
+							className: "w-full",
 						},
 						model: {
 							options: ["dalle", "stablediffusion"],
 							disabled: loading,
 							labelText: "Select image model",
-							className: "w-full"
+							className: "w-full",
 						},
 						sceneCount: {
 							disabled: loading,
 							labelText: "Max number of scenes",
 							placeholder: "Number",
-							className: "w-full"
+							className: "w-full",
 						},
 					}}
 					formProps={{

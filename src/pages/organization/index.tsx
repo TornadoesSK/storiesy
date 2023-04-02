@@ -142,10 +142,10 @@ function CreateOrganization() {
 					}
 				}}
 				formProps={{
-					showSubmitButton: true
+					showSubmitButton: true,
+					loading: mutation.isLoading
 				}}
 			/>
-			{mutation.isLoading && <p>Loading...</p>}
 		</div>
 	);
 }

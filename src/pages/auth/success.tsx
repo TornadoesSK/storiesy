@@ -19,9 +19,12 @@ export default function Verify() {
 			{fragmentParams?.error ? (
 				<>{fragmentParams.error_description}</>
 			) : (
-				<>
-					Successfully logged in. <Link href={"/"}>Go to Dashboard</Link>
-				</>
+				// <>
+				// 	Successfully logged in. <Link href={"/"}>Go to Dashboard</Link>
+				// </>
+				<div className="flex h-full w-full flex-col items-center justify-center">
+					<div className="mb-4 text-2xl text-neutral">Successfully logged in. <Link href={"/"}>Go to Dashboard</Link></div>
+				</div>
 			)}
 		</>
 	);

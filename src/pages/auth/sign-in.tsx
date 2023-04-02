@@ -31,8 +31,8 @@ export default function SignIn() {
 	}, [router, supabaseClient.auth]);
 
 	return (
-		<div>
-			<div>Sign in</div>
+		<div className="flex flex-col h-full w-full items-center justify-center">
+			<h1 className="text-neutral text-3xl mb-4">Welcome</h1>
 			<Form
 				schema={formSchema}
 				onSubmit={async (input) => {
@@ -41,7 +41,7 @@ export default function SignIn() {
 					const { data, error } = await supabaseClient.auth.signInWithOtp({
 						email: input.email,
 						options: {
-							emailRedirectTo: `${env.NEXT_PUBLIC_APP_URL}${redirectedFrom ?? "/auth/success"}`,
+							emailRedirectTo: `${env.NEXT_PUBLIC_APP_URL}${redirectedFrom ?? "/"}`,
 						},
 					});
 					setLoading(false);
@@ -52,8 +52,19 @@ export default function SignIn() {
 
 					if (data) router.push("/auth/verify");
 				}}
+				formProps={{
+					showSubmitButton: true,
+					className: "flex flex-col items-center",
+					submitText: "Sign in",
+					loading: loading
+				}}
+				props={{
+					email: {
+						wrapperClassName: "mb-4",
+						placeholder: "Email address"
+					}
+				}}
 			/>
-			{loading && "loading"}
 			{errorMessage}
 		</div>
 	);
