@@ -30,18 +30,18 @@ export async function joinImagesFE(images: string[]) {
 		row.forEach((el, j) => {
 			const wiggleX = Math.random() * wiggle;
 			const wiggleY = Math.random() * wiggle;
-			const rounded = Math.random() > 0.5;
-			if (rounded) {
-				clipRounded(
-					ctx,
-					(1024 + padding) * j + wiggleX,
-					currentStartHeight + wiggleY,
-					el.width,
-					el.height,
-					32,
-				);
-				ctx.clip();
-			}
+			// const rounded = Math.random() > 0.5;
+			// if (rounded) {
+			// 	clipRounded(
+			// 		ctx,
+			// 		(1024 + padding) * j + wiggleX,
+			// 		currentStartHeight + wiggleY,
+			// 		el.width,
+			// 		el.height,
+			// 		32,
+			// 	);
+			// 	ctx.clip();
+			// }
 			ctx.drawImage(
 				el,
 				(1024 + padding) * j + wiggleX,
@@ -49,30 +49,30 @@ export async function joinImagesFE(images: string[]) {
 				el.width,
 				el.height,
 			);
-			if (rounded) ctx.restore();
+			// if (rounded) ctx.restore();
 		});
 		currentStartHeight += rowHeight;
 	});
 	return canvas.toDataURL().split(";base64,")[1];
 }
 
-function clipRounded(
-	ctx: CanvasRenderingContext2D,
-	x: number,
-	y: number,
-	width: number,
-	height: number,
-	radius: number,
-) {
-	ctx.beginPath();
-	ctx.moveTo(x + radius, y);
-	ctx.lineTo(x + width - radius, y);
-	ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-	ctx.lineTo(x + width, y + height - radius);
-	ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-	ctx.lineTo(x + radius, y + height);
-	ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-	ctx.lineTo(x, y + radius);
-	ctx.quadraticCurveTo(x, y, x + radius, y);
-	ctx.closePath();
-}
+// function clipRounded(
+// 	ctx: CanvasRenderingContext2D,
+// 	x: number,
+// 	y: number,
+// 	width: number,
+// 	height: number,
+// 	radius: number,
+// ) {
+// 	ctx.beginPath();
+// 	ctx.moveTo(x + radius, y);
+// 	ctx.lineTo(x + width - radius, y);
+// 	ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+// 	ctx.lineTo(x + width, y + height - radius);
+// 	ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+// 	ctx.lineTo(x + radius, y + height);
+// 	ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+// 	ctx.lineTo(x, y + radius);
+// 	ctx.quadraticCurveTo(x, y, x + radius, y);
+// 	ctx.closePath();
+// }

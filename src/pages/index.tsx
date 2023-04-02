@@ -31,12 +31,28 @@ export default function Home() {
 	const loading = configMutation.isLoading || imagesMutation.isLoading;
 	const organization = api.organization.get.useQuery();
 	const router = useRouter();
-	const [_images, setImages] = useState<typeof imagesMutation.data>();
+	const [images, setImages] = useState<typeof imagesMutation.data>();
 	const [fullImage, setFullImage] = useState<string>();
 	const [retried, setRetried] = useState(false);
 	const editForm = useForm({
 		schema: editSchema,
 	});
+	const handleResult = async (result: NonNullable<typeof imagesMutation.data>) => {
+		const saveResult = result.map((image) => {
+			const oldImage = images?.find((oldImage) => oldImage.index === image.index);
+			return !!image.image || oldImage === undefined ? image : oldImage;
+		});
+		setImages(saveResult);
+		editForm.setValue(
+			"changes",
+			saveResult.map((image) => ({
+				changeImage: false,
+				text: `${image.speechBubble?.characterName}: ${image.speechBubble?.text}`,
+			})),
+		);
+		const fullImage = await joinImagesFE(saveResult.map((image) => image.image).filter(isTruthy));
+		if (fullImage) setFullImage(fullImage);
+	};
 
 	useEffect(() => {
 		if (organization.data === null) {
@@ -74,9 +90,31 @@ export default function Home() {
 						form={editForm}
 						schema={editSchema}
 						onSubmit={async (output) => {
-							console.log(output);
+							const changes = output.changes
+								.map((change, index) => ({
+									...change,
+									index,
+								}))
+								.filter((change) => change.changeImage);
+							if (!images) return;
+							const mutationInput = images.map(({ image: _, ...rest }) => {
+								const change = changes.find((change) => change.index === rest.index);
+								return {
+									...rest,
+									speechBubble: {
+										characterName: change?.text.split(": ")[0] ?? rest.speechBubble?.characterName,
+										text: change?.text.split(": ")[1] ?? rest.speechBubble?.text ?? "",
+									},
+									skip: !change?.changeImage,
+								};
+							});
+							const result = await imagesMutation.mutateAsync({
+								model: "dalle",
+								scenes: mutationInput,
+							});
+							handleResult(result);
 						}}
-						formProps={{ showSubmitButton: true }}
+						formProps={{ showSubmitButton: images !== undefined }}
 					/>
 				</div>
 				<Form
@@ -95,6 +133,7 @@ export default function Home() {
 								});
 								if (config) break;
 								setRetried(true);
+							} catch {
 							} finally {
 								setRetried(false);
 							}
@@ -105,18 +144,7 @@ export default function Home() {
 							model: output.model,
 							sceneLimit: output.sceneCount,
 						});
-						setImages(result);
-						editForm.setValue(
-							"changes",
-							result.map((image) => ({
-								changeImage: false,
-								text: `${image.speechBubble?.characterName}: ${image.speechBubble?.text}`,
-							})),
-						);
-						const fullImage = await joinImagesFE(
-							result.map((image) => image.image).filter(isTruthy),
-						);
-						if (fullImage) setFullImage(fullImage);
+						await handleResult(result);
 					}}
 					props={{
 						prompt: {

@@ -113,13 +113,22 @@ export const generateRouter = createTRPCRouter({
 								text: z.string(),
 							})
 							.optional(),
+						skip: z.boolean().default(false),
 					}),
 				),
 				sceneLimit: z.number().default(4),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const promises = input.scenes.slice(0, input.sceneLimit).map(async (scene) => {
+			const promises = input.scenes.slice(0, input.sceneLimit).map(async (scene, index) => {
+				if (scene.skip) {
+					return {
+						image: "",
+						speechBubble: scene.speechBubble,
+						imagePrompt: scene.imagePrompt,
+						index,
+					};
+				}
 				const imagePrompt = `${scene.imagePrompt}. Photorealistic. 4k beautiful photography.`;
 				try {
 					const image = await promptImage(ctx.openai, imagePrompt, input.model);
@@ -128,6 +137,7 @@ export const generateRouter = createTRPCRouter({
 								image: await processImage(image.data, scene.speechBubble),
 								speechBubble: scene.speechBubble,
 								imagePrompt,
+								index,
 						  }
 						: null;
 				} catch (e) {
@@ -135,7 +145,7 @@ export const generateRouter = createTRPCRouter({
 					throw e;
 				}
 			});
-			const result = (await Promise.all(promises)).filter(isTruthy);
+			const result = await (await Promise.all(promises)).filter(isTruthy);
 
 			console.log("Images processed. Joining...");
 			// const singleImage = await joinImages(result);

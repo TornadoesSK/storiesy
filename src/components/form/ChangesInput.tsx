@@ -31,7 +31,7 @@ export function ChangesInput() {
 						/>
 						{error && <span>{error.errorMessage}</span>}
 					</div>
-					<div className="flex pb-8">
+					{/* <div className="flex pb-8">
 						<span className="pr-2">Change text</span>
 						<textarea
 							className="input-bordered input "
@@ -45,7 +45,7 @@ export function ChangesInput() {
 							}
 						/>
 						{error && <span>{error.errorMessage}</span>}
-					</div>
+					</div> */}
 				</Fragment>
 			))}
 		</div>
