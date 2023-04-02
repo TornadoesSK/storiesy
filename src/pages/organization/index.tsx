@@ -23,7 +23,12 @@ function OrganizationDetail({
 }) {
 	return (
 		<div>
-			<h1 className="mb-4 text-4xl text-neutral">Organization detail</h1>
+			<div className="flex w-full items-center justify-between">
+				<h1 className="mb-4 text-4xl text-neutral">Organization detail</h1>
+				{organization?.logo && (
+					<img className="max-w-[150px]" src={organization.logo} alt="company logo" />
+				)}
+			</div>
 			<div className="py-2">
 				<span className="font-semibold">Organization name:</span> {organization.name}
 			</div>

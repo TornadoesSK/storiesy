@@ -15,10 +15,16 @@ export default function Home() {
 	const imagesMutation = api.generate.images.useMutation();
 	const [result, setResult] = useState<RouterOutputs["generate"]["images"]>();
 	const loading = configMutation.isLoading || imagesMutation.isLoading;
+	const organization = api.organization.get.useQuery();
 	return (
 		<>
 			<div className="flex h-full flex-col justify-between p-8">
-				<h1 className="text-4xl text-neutral">New comic</h1>
+				<div className="flex w-full items-center justify-between">
+					<h1 className="text-4xl text-neutral">New comic</h1>
+					{organization.data?.logo && (
+						<img className="max-w-[150px]" src={organization.data.logo} alt="company logo" />
+					)}
+				</div>
 				<div className="mt-8 mb-8 h-full overflow-y-scroll rounded-lg px-6 py-4 text-neutral shadow-xl">
 					{configMutation.isLoading && <p>Loading config...</p>}
 					{imagesMutation.isLoading && <p>Loading images...</p>}
