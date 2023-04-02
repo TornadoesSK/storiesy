@@ -6,11 +6,21 @@ import { Form } from "../components/form/Form";
 import { api } from "../utils/api";
 import { isTruthy } from "../utils/isTruthy";
 import { joinImagesFE } from "../utils/loadImageFE";
+import { useForm } from "../components/form/useForm";
 
 const schema = z.object({
 	prompt: z.string(),
 	model: z.enum(["dalle", "stablediffusion"]),
 	sceneCount: z.number().optional(),
+});
+
+const editSchema = z.object({
+	changes: z.array(
+		z.object({
+			changeImage: z.boolean(),
+			text: z.string(),
+		}),
+	),
 });
 
 const maxRetries = 3;
@@ -24,6 +34,9 @@ export default function Home() {
 	const [images, setImages] = useState<typeof imagesMutation.data>();
 	const [fullImage, setFullImage] = useState<string>();
 	const [retried, setRetried] = useState(false);
+	const editForm = useForm({
+		schema: editSchema,
+	});
 
 	useEffect(() => {
 		if (organization.data === null) {
@@ -41,20 +54,28 @@ export default function Home() {
 						<img className="max-w-[150px]" src={organization.data.logo} alt="company logo" />
 					)}
 				</div>
-				<div className="mt-8 mb-8 h-full overflow-y-scroll rounded-lg px-6 py-4 text-neutral shadow-xl">
-					{configMutation.isLoading && <p>Loading config...</p>}
-					{retried && <p>Retrying...</p>}
-					{imagesMutation.isLoading && <p>Loading images...</p>}
-					{fullImage && (
-						<div className="pb-4">
-							<Image
-								src={`data:image/png;base64,${fullImage}`}
-								alt="AI generated image"
-								width={512}
-								height={512}
-							/>
-						</div>
-					)}
+				<div className="mt-8 mb-8 flex h-full justify-between overflow-y-scroll rounded-lg px-6 py-4 text-neutral shadow-xl">
+					<div>
+						{configMutation.isLoading && <p>Loading config...</p>}
+						{retried && <p>Retrying...</p>}
+						{imagesMutation.isLoading && <p>Loading images...</p>}
+						{fullImage && (
+							<div className="pb-4">
+								<Image
+									src={`data:image/png;base64,${fullImage}`}
+									alt="AI generated image"
+									width={512}
+									height={512}
+								/>
+							</div>
+						)}
+					</div>
+					<Form
+						form={editForm}
+						schema={editSchema}
+						onSubmit={async (output) => {}}
+						formProps={{ showSubmitButton: true }}
+					/>
 				</div>
 				<Form
 					schema={schema}
@@ -83,6 +104,13 @@ export default function Home() {
 							sceneLimit: output.sceneCount,
 						});
 						setImages(result);
+						editForm.setValue(
+							"changes",
+							result.map((image) => ({
+								changeImage: false,
+								text: `${image.speechBubble?.characterName}: ${image.speechBubble?.text}`,
+							})),
+						);
 						const fullImage = await joinImagesFE(
 							result.map((image) => image.image).filter(isTruthy),
 						);
