@@ -5,7 +5,7 @@ import { api, type RouterOutputs } from "../../utils/api";
 export default function Organization() {
 	const organization = api.organization.get.useQuery();
 	return (
-		<div className="p-8 text-neutral h-full flex flex-col justify-between">
+		<div className="flex h-full flex-col justify-between p-8 text-neutral">
 			{organization.data ? (
 				<OrganizationDetail organization={organization.data} />
 			) : (
@@ -52,35 +52,36 @@ function ChangeOrganization() {
 	const organizationIds = api.organization.list.useQuery();
 	return (
 		<div>
-			{organizationIds.isLoading && <p>Fetching organizations...</p>}
-			{organizationIds.data && (
-				<>
-					<h1 className="text-xl mb-2">Change organization</h1>
-					<Form
-						schema={changeOrganizationSchema}
-						onSubmit={async (output) => {
-							await mutation.mutateAsync({
-								organizationId: output.organizationId === "None" ? null : output.organizationId,
-							});
-							location.reload();
-						}}
-						props={{
-							organizationId: {
-								options: ["None", ...organizationIds.data.map((org) => org.id)],
-								labelMap: organizationIds.data.reduce(
-									(acc, org) => ({ ...acc, [org.id]: org.name }),
-									{},
-								),
-							},
-						}}
-						formProps={{
-							hasSubmitButton: true,
-							submitText: "Change",
-							className: "w-full flex items-end gap-2"
-						}}
-					/>
-				</>
-			)}
+			<>
+				<h1 className="mb-2 text-xl">Change organization</h1>
+				<Form
+					schema={changeOrganizationSchema}
+					onSubmit={async (output) => {
+						await mutation.mutateAsync({
+							organizationId: output.organizationId === "None" ? null : output.organizationId,
+						});
+						location.reload();
+					}}
+					props={{
+						organizationId: {
+							options: organizationIds.data
+								? ["None", ...organizationIds.data.map((org) => org.id)]
+								: ["None"],
+							labelMap: organizationIds?.data?.reduce(
+								(acc, org) => ({ ...acc, [org.id]: org.name }),
+								{},
+							),
+							disabled: organizationIds.isLoading,
+							placeholder: organizationIds.isLoading && "Fetching organizations...",
+						},
+					}}
+					formProps={{
+						hasSubmitButton: true,
+						submitText: "Change",
+						className: "w-full flex items-end gap-2",
+					}}
+				/>
+			</>
 			{mutation.isLoading && <p>Loading...</p>}
 		</div>
 	);

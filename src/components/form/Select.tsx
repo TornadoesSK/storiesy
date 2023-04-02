@@ -2,12 +2,13 @@ import { useTsController } from "@ts-react/form";
 import { type ReactNode } from "react";
 
 type SelectProps = {
-	options: string[];
-	labelMap?: Record<string, ReactNode>;
-	className?: string;
-	disabled?: boolean;
-	labelText?: string;
-	wrapperClassName?: string;
+	options: string[],
+	labelMap?: Record<string, ReactNode>,
+	className?: string,
+	disabled?: boolean,
+	labelText?: string,
+	placeholder?: string | boolean,
+	wrapperClassName?: string,
 };
 export function Select({
 	options,
@@ -15,6 +16,7 @@ export function Select({
 	className,
 	disabled,
 	labelText,
+	placeholder,
 	wrapperClassName,
 }: SelectProps) {
 	const { field, error } = useTsController<string>();
@@ -31,7 +33,7 @@ export function Select({
 				}
 				disabled={disabled}
 			>
-				<option value="">Choose an option</option>
+				<option value="">{placeholder || "Choose an option"}</option>
 				{options.map((option) => (
 					<option value={option} key={option}>
 						{labelMap?.[option] ?? option}

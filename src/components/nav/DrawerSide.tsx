@@ -23,7 +23,7 @@ export default function DrawerSide({
 	});
 
 	return (
-		<div className="drawer-side">
+		<div className="drawer-side min-w-[160px]">
 			<label htmlFor={sidebarId} className="drawer-overlay"></label>
 			<ul className="menu items-center justify-between bg-primary p-4 text-base-content">
 				<li>
