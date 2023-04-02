@@ -109,9 +109,8 @@ export const generateRouter = createTRPCRouter({
 					: promptImageStableDiffusion(imagePrompt));
 				return image.data ? await processImage(image.data, scene.speechBubble) : "";
 			});
-			console.log("Images processed. Joining...");
-
 			const result = (await Promise.all(promises)).filter(isTruthy);
+			console.log("Images processed. Joining...");
 			const singleImage = await joinImages(result);
 			// log to db
 			await ctx.prisma.imagePrompt.create({

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { z } from "zod";
 import { Form } from "../components/form/Form";
@@ -11,12 +11,15 @@ const schema = z.object({
 	sceneCount: z.number().optional(),
 });
 
+const maxRetries = 3;
+
 export default function Home() {
 	const configMutation = api.generate.imageConfig.useMutation();
 	const imagesMutation = api.generate.images.useMutation();
 	const loading = configMutation.isLoading || imagesMutation.isLoading;
 	const organization = api.organization.get.useQuery();
 	const router = useRouter();
+	const [retried, setRetried] = useState(false);
 
 	useEffect(() => {
 		if (organization.data === null) {
@@ -36,6 +39,7 @@ export default function Home() {
 				</div>
 				<div className="mt-8 mb-8 h-full overflow-y-scroll rounded-lg px-6 py-4 text-neutral shadow-xl">
 					{configMutation.isLoading && <p>Loading config...</p>}
+					{retried && <p>Retrying...</p>}
 					{imagesMutation.isLoading && <p>Loading images...</p>}
 					{imagesMutation.data && (
 						<div className="pb-4">
@@ -53,11 +57,20 @@ export default function Home() {
 					onSubmit={async (output) => {
 						configMutation.reset();
 						imagesMutation.reset();
-						const config = await configMutation.mutateAsync({
-							prompt: output.prompt,
-							sceneCount: output.sceneCount,
-						});
-						console.log(config);
+						let config;
+						for (let i = 0; i < maxRetries; i++) {
+							try {
+								config = await configMutation.mutateAsync({
+									prompt: output.prompt,
+									sceneCount: output.sceneCount,
+								});
+								if (config) break;
+								setRetried(true);
+							} finally {
+								setRetried(false);
+							}
+						}
+						if (!config) return;
 						await imagesMutation.mutateAsync({
 							...config,
 							model: output.model,
