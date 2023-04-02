@@ -10,31 +10,6 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model wallet {
-    id       String    @id @default(cuid())
-    name     String
-    expenses expense[]
-}
-
-model expense {
-    id         String   @id @default(cuid())
-    name       String
-    walletId   String
-    wallet     wallet   @relation(fields: [walletId], references: [id])
-    categoryId String
-    category   category @relation(fields: [categoryId], references: [id])
-    amount     Float    @default(0)
-    note       String?
-    createdAt  DateTime @default(now())
-    updatedAt  DateTime @updatedAt
-}
-
-model category {
-    id      String    @id @default(cuid())
-    name    String
-    expense expense[]
-}
-
 model textPrompt {
     id           String   @id @default(cuid())
     createdAt    DateTime @default(now())
