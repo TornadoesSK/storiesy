@@ -4,6 +4,8 @@ import { useRouter } from "next/router";
 import { z } from "zod";
 import { Form } from "../components/form/Form";
 import { api } from "../utils/api";
+import { isTruthy } from "../utils/isTruthy";
+import { joinImagesFE } from "../utils/loadImageFE";
 
 const schema = z.object({
 	prompt: z.string(),
@@ -19,6 +21,8 @@ export default function Home() {
 	const loading = configMutation.isLoading || imagesMutation.isLoading;
 	const organization = api.organization.get.useQuery();
 	const router = useRouter();
+	const [images, setImages] = useState<typeof imagesMutation.data>();
+	const [fullImage, setFullImage] = useState<string>();
 	const [retried, setRetried] = useState(false);
 
 	useEffect(() => {
@@ -41,10 +45,10 @@ export default function Home() {
 					{configMutation.isLoading && <p>Loading config...</p>}
 					{retried && <p>Retrying...</p>}
 					{imagesMutation.isLoading && <p>Loading images...</p>}
-					{imagesMutation.data && (
+					{fullImage && (
 						<div className="pb-4">
 							<Image
-								src={`data:image/png;base64,${imagesMutation.data}`}
+								src={`data:image/png;base64,${fullImage}`}
 								alt="AI generated image"
 								width={512}
 								height={512}
@@ -57,6 +61,8 @@ export default function Home() {
 					onSubmit={async (output) => {
 						configMutation.reset();
 						imagesMutation.reset();
+						setImages(undefined);
+						setFullImage(undefined);
 						let config;
 						for (let i = 0; i < maxRetries; i++) {
 							try {
@@ -71,11 +77,16 @@ export default function Home() {
 							}
 						}
 						if (!config) return;
-						await imagesMutation.mutateAsync({
+						const result = await imagesMutation.mutateAsync({
 							...config,
 							model: output.model,
 							sceneLimit: output.sceneCount,
 						});
+						setImages(result);
+						const fullImage = await joinImagesFE(
+							result.map((image) => image.image).filter(isTruthy),
+						);
+						if (fullImage) setFullImage(fullImage);
 					}}
 					props={{
 						prompt: {

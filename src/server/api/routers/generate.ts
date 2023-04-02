@@ -105,23 +105,29 @@ export const generateRouter = createTRPCRouter({
 			const promises = input.scenes.slice(0, input.sceneLimit).map(async (scene) => {
 				try {
 					const image = await promptImage(ctx.openai, scene.imagePrompt, input.model);
-					return image.data ? await processImage(image.data, scene.speechBubble) : "";
+					return image.data
+						? {
+								image: await processImage(image.data, scene.speechBubble),
+								speechBubble: scene.speechBubble,
+						  }
+						: null;
 				} catch (e) {
 					console.log(`Failed at processing prompt: ${scene.imagePrompt}`);
 					throw e;
 				}
 			});
 			const result = (await Promise.all(promises)).filter(isTruthy);
+
 			console.log("Images processed. Joining...");
-			const singleImage = await joinImages(result);
+			// const singleImage = await joinImages(result);
 			// log to db
-			await ctx.prisma.imagePrompt.create({
-				data: {
-					input: JSON.stringify(input.scenes.map((scene) => scene.imagePrompt)),
-					output: singleImage ?? "",
-				},
-			});
-			return singleImage;
+			// await ctx.prisma.imagePrompt.create({
+			// 	data: {
+			// 		input: JSON.stringify(input.scenes.map((scene) => scene.imagePrompt)),
+			// 		output: singleImage ?? "",
+			// 	},
+			// });
+			return result;
 		}),
 });
 
