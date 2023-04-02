@@ -26,6 +26,7 @@ function OrganizationDetail({
 			<div className="flex w-full items-center justify-between">
 				<h1 className="mb-4 text-4xl text-neutral">Organization detail</h1>
 				{organization?.logo && (
+					// eslint-disable-next-line @next/next/no-img-element
 					<img className="max-w-[150px]" src={organization.logo} alt="company logo" />
 				)}
 			</div>
@@ -52,6 +53,16 @@ const changeOrganizationSchema = z.object({
 	organizationId: SelectStringSchema,
 });
 
+function orgSelectPlaceholder(orgLoading: boolean, mutLoading: boolean) {
+	if (orgLoading) {
+		return "Fetching organizations..."
+	}
+	else if (mutLoading) {
+		return "Loading..."
+	}
+	return false;
+}
+
 function ChangeOrganization() {
 	const mutation = api.organization.change.useMutation();
 	const organizationIds = api.organization.list.useQuery();
@@ -76,18 +87,17 @@ function ChangeOrganization() {
 								(acc, org) => ({ ...acc, [org.id]: org.name }),
 								{},
 							),
-							disabled: organizationIds.isLoading,
-							placeholder: organizationIds.isLoading && "Fetching organizations...",
+							disabled: organizationIds.isLoading || mutation.isLoading,
+							placeholder: orgSelectPlaceholder(organizationIds.isLoading, mutation.isLoading),
 						},
 					}}
 					formProps={{
-						hasSubmitButton: true,
+						showSubmitButton: true,
 						submitText: "Change",
 						className: "w-full flex items-end gap-2",
 					}}
 				/>
 			</>
-			{mutation.isLoading && <p>Loading...</p>}
 		</div>
 	);
 }
@@ -96,6 +106,7 @@ const createOrganizationSchema = z
 	.object({
 		name: z.string(),
 		color: z.string(),
+		logo: z.string(),
 	})
 	.refine(({ color }) => /^#[0-9A-F]{6}$/i.test(color), {
 		message: "Color must be a valid hex color",
@@ -106,12 +117,32 @@ function CreateOrganization() {
 	const mutation = api.organization.create.useMutation();
 	return (
 		<div>
-			<h1>Create organization</h1>
+			<h1 className="mb-6 text-4xl">Create organization</h1>
 			<Form
 				schema={createOrganizationSchema}
 				onSubmit={async (output) => {
 					await mutation.mutateAsync(output);
 					location.reload();
+				}}
+				props={{
+					name: {
+						labelText: "Organization name",
+						placeholder: " ",
+						wrapperClassName: "flex flex-col items-start mb-6",
+					},
+					color: {
+						labelText: "Organization main color",
+						placeholder: "#000000",
+						wrapperClassName: "flex flex-col items-start mb-6",
+					},
+					logo: {
+						labelText: "Organization logo url",
+						placeholder: " ",
+						wrapperClassName: "flex flex-col items-start mb-6",
+					}
+				}}
+				formProps={{
+					showSubmitButton: true
 				}}
 			/>
 			{mutation.isLoading && <p>Loading...</p>}

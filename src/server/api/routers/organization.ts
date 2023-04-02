@@ -33,6 +33,7 @@ export const organizationRouter = createTRPCRouter({
 			z.object({
 				name: z.string(),
 				color: z.string(),
+				logo: z.string(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {

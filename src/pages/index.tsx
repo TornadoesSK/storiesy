@@ -22,6 +22,7 @@ export default function Home() {
 				<div className="flex w-full items-center justify-between">
 					<h1 className="text-4xl text-neutral">New comic</h1>
 					{organization.data?.logo && (
+						// eslint-disable-next-line @next/next/no-img-element
 						<img className="max-w-[150px]" src={organization.data.logo} alt="company logo" />
 					)}
 				</div>
@@ -93,21 +94,24 @@ export default function Home() {
 							disabled: loading,
 							labelText: "Comic main character and story description",
 							wrapperClassName: "grow",
+							className: "w-full"
 						},
 						model: {
 							options: ["dalle", "stablediffusion"],
 							disabled: loading,
 							labelText: "Select image model",
+							className: "w-full"
 						},
 						sceneCount: {
 							disabled: loading,
 							labelText: "Max number of scenes",
 							placeholder: "Number",
+							className: "w-full"
 						},
 					}}
 					formProps={{
 						className: "w-full flex items-end gap-2",
-						hasSubmitButton: true,
+						showSubmitButton: true,
 						loading: loading,
 					}}
 				/>

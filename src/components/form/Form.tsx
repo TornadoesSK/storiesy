@@ -21,15 +21,15 @@ type FormProps = {
 	onSubmit: () => void,
 	className?: string,
 	loading?: boolean,
-	hasSubmitButton?: boolean,
+	showSubmitButton?: boolean,
 	submitText?: string
 };
 export const Form = createTsForm(mapping, {
-	FormComponent: ({ children, onSubmit, className, loading, hasSubmitButton, submitText }: FormProps) => {
+	FormComponent: ({ children, onSubmit, className, loading, showSubmitButton, submitText }: FormProps) => {
 		return (
 			<form onSubmit={onSubmit} className={className}>
 				{children}
-				{hasSubmitButton && (
+				{showSubmitButton && (
 					<button className={`btn text-white bg-primary border-0 ${loading ? "loading" : ""} disabled:border-gray-300 disabled:bg-gray-300 disabled:text-gray-400 hover:bg-primary hover:text-white`} type="submit" disabled={loading}>
 						{submitText || "Submit"}
 					</button>
