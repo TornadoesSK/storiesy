@@ -149,15 +149,15 @@ type ImagePromptOutput =
 async function promptImageDalle(openai: OpenAIApi, prompt: string): Promise<ImagePromptOutput> {
 	console.log("Prompting Dall-E for images");
 	return {
-		type: "url",
-		url: (
+		type: "base64",
+		data: (
 			await openai.createImage({
 				prompt: prompt,
 				n: 1,
 				size: "1024x1024",
-				response_format: "url",
+				response_format: "b64_json",
 			})
-		).data.data[0]?.url,
+		).data.data[0]?.b64_json,
 	};
 }
 
