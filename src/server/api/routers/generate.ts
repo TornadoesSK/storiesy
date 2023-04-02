@@ -5,6 +5,8 @@ import { type OpenAIApi } from "openai";
 import { type paths } from "../../../utils/customModelApiSchema";
 import { Fetcher } from "openapi-typescript-fetch";
 import { env } from "../../../env/server.mjs";
+import { joinImages, processImage } from "../../../utils/images";
+import { isTruthy } from "../../../utils/isTruthy";
 
 const fetcher = Fetcher.for<paths>();
 fetcher.configure({
@@ -34,7 +36,7 @@ If you need to use quotes, use apostrophes instead to not break the JSON.\
 Do not output anything apart from the JSON.`;
 }
 
-const textOutputSchema = z.object({
+export const textOutputSchema = z.object({
 	scenes: z.array(
 		z.object({
 			imagePrompt: z.string(),
@@ -101,22 +103,23 @@ export const generateRouter = createTRPCRouter({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const promises = input.scenes.slice(0, input.sceneLimit).map(async (scene) => {
-				return {
-					...scene,
-					imageSrc: await (input.model === "dalle"
-						? promptImageDalle(ctx.openai, scene.imagePrompt)
-						: promptImageStableDiffusion(scene.imagePrompt)),
-				};
+				const image = await (input.model === "dalle"
+					? promptImageDalle(ctx.openai, scene.imagePrompt)
+					: promptImageStableDiffusion(scene.imagePrompt));
+				return image.data ? await processImage(image.data, scene.speechBubble) : "";
 			});
-			const result = await Promise.all(promises);
+			console.log("Images processed. Joining...");
+
+			const result = (await Promise.all(promises)).filter(isTruthy);
+			const singleImage = await joinImages(result);
 			// log to db
 			await ctx.prisma.imagePrompt.create({
 				data: {
 					input: JSON.stringify(input.scenes.map((scene) => scene.imagePrompt)),
-					output: JSON.stringify(result),
+					output: singleImage ?? "",
 				},
 			});
-			return { scenes: result };
+			return singleImage;
 		}),
 });
 
@@ -136,28 +139,33 @@ async function promptChat(openai: OpenAIApi, basePrompt: string, prompt: string)
 	return completion.data.choices[0]?.message?.content ?? "ERROR";
 }
 
-type ImagePromptOutput =
-	| {
-			type: "url";
-			url?: string;
-	  }
-	| {
-			type: "base64";
-			data?: string;
-	  };
+type ImagePromptOutput = {
+	type: "base64";
+	data?: string;
+};
 
 async function promptImageDalle(openai: OpenAIApi, prompt: string): Promise<ImagePromptOutput> {
 	console.log("Prompting Dall-E for images");
+	const imageData = (
+		await openai.createImage({
+			prompt: prompt,
+			n: 1,
+			size: "1024x1024",
+			response_format: "b64_json",
+		})
+	).data.data[0]?.b64_json;
+	const fetchResult = await fetch("http://dev.jednanula.sk:8085/cartoonize", {
+		method: "POST",
+		body: JSON.stringify({ image: imageData }),
+		headers: {
+			"Content-Type": "application/json",
+		},
+	});
+	const json = await fetchResult.json();
+	const cartooned = json.image;
 	return {
 		type: "base64",
-		data: (
-			await openai.createImage({
-				prompt: prompt,
-				n: 1,
-				size: "1024x1024",
-				response_format: "b64_json",
-			})
-		).data.data[0]?.b64_json,
+		data: cartooned,
 	};
 }
 

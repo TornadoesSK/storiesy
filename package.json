@@ -12,6 +12,7 @@
 		"custommodel:genapi": "node generateCustomModelApiSchema.js"
 	},
 	"dependencies": {
+		"@napi-rs/canvas": "^0.1.39",
 		"@prisma/client": "^4.8.0",
 		"@supabase/auth-helpers-nextjs": "^0.5.0",
 		"@tanstack/react-query": "^4.20.0",

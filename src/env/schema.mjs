@@ -9,7 +9,7 @@ export const serverSchema = z.object({
 	DATABASE_URL: z.string().url(),
 	NODE_ENV: z.enum(["development", "test", "production"]),
 	OPENAI_API_KEY: z.string(),
-	OPENAI_ORGANIZATION_NAME: z.string(),
+	OPENAI_ORGANIZATION_NAME: z.string().optional(),
 	CUSTOM_IMAGE_MODEL_API_URL: z.string().url().refine(url => !url.endsWith("/")),
 	CUSTOM_IMAGE_MODEL_API_PASSWORD: z.string(),
 });

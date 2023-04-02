@@ -1,9 +1,9 @@
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
 import { z } from "zod";
 import { Form } from "../components/form/Form";
-import { api, type RouterOutputs } from "../utils/api";
-import { useRouter } from "next/router";
+import { api } from "../utils/api";
 
 const schema = z.object({
 	prompt: z.string(),
@@ -14,7 +14,6 @@ const schema = z.object({
 export default function Home() {
 	const configMutation = api.generate.imageConfig.useMutation();
 	const imagesMutation = api.generate.images.useMutation();
-	const [result, setResult] = useState<RouterOutputs["generate"]["images"]>();
 	const loading = configMutation.isLoading || imagesMutation.isLoading;
 	const organization = api.organization.get.useQuery();
 	const router = useRouter();
@@ -38,64 +37,32 @@ export default function Home() {
 				<div className="mt-8 mb-8 h-full overflow-y-scroll rounded-lg px-6 py-4 text-neutral shadow-xl">
 					{configMutation.isLoading && <p>Loading config...</p>}
 					{imagesMutation.isLoading && <p>Loading images...</p>}
-					{result?.scenes.map((scene, idx) => (
-						<div key={idx} className="pb-4">
-							<div className="italic">{scene.imagePrompt}</div>
-							{scene.speechBubble && (
-								<div>
-									<span className="font-medium">{scene.speechBubble.characterName}</span>:{" "}
-									<span>{scene.speechBubble.text}</span>
-								</div>
-							)}
-							{scene.imageSrc ? (
-								scene.imageSrc.type === "url" ? (
-									<>
-										{scene.imageSrc.url ? (
-											<Image
-												src={scene.imageSrc.url}
-												alt="AI generated image"
-												width={512}
-												height={512}
-											/>
-										) : (
-											"malformed url"
-										)}
-									</>
-								) : (
-									<>
-										{scene.imageSrc.data ? (
-											<Image
-												src={`data:image/png;base64,${scene.imageSrc.data}`}
-												alt="AI generated image"
-												width={512}
-												height={512}
-											/>
-										) : (
-											"malformed data"
-										)}
-									</>
-								)
-							) : (
-								`bad image url ${scene.imageSrc}`
-							)}
+					{imagesMutation.data && (
+						<div className="pb-4">
+							<Image
+								src={`data:image/png;base64,${imagesMutation.data}`}
+								alt="AI generated image"
+								width={512}
+								height={512}
+							/>
 						</div>
-					))}
+					)}
 				</div>
 				<Form
 					schema={schema}
 					onSubmit={async (output) => {
-						setResult(undefined); // Hide previous result
+						configMutation.reset();
+						imagesMutation.reset();
 						const config = await configMutation.mutateAsync({
 							prompt: output.prompt,
 							sceneCount: output.sceneCount,
 						});
 						console.log(config);
-						const result = await imagesMutation.mutateAsync({
+						await imagesMutation.mutateAsync({
 							...config,
 							model: output.model,
 							sceneLimit: output.sceneCount,
 						});
-						setResult(result);
 					}}
 					props={{
 						prompt: {
