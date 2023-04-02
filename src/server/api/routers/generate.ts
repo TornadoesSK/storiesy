@@ -103,9 +103,10 @@ export const generateRouter = createTRPCRouter({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const promises = input.scenes.slice(0, input.sceneLimit).map(async (scene) => {
+				const imagePrompt = `${scene.imagePrompt}. Photorealistic. 4k beautiful photography.`;
 				const image = await (input.model === "dalle"
-					? promptImageDalle(ctx.openai, scene.imagePrompt)
-					: promptImageStableDiffusion(scene.imagePrompt));
+					? promptImageDalle(ctx.openai, imagePrompt)
+					: promptImageStableDiffusion(imagePrompt));
 				return image.data ? await processImage(image.data, scene.speechBubble) : "";
 			});
 			console.log("Images processed. Joining...");
