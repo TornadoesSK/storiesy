@@ -103,11 +103,13 @@ export const generateRouter = createTRPCRouter({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const promises = input.scenes.slice(0, input.sceneLimit).map(async (scene) => {
-				const imagePrompt = `${scene.imagePrompt}. Photorealistic. 4k beautiful photography.`;
-				const image = await (input.model === "dalle"
-					? promptImageDalle(ctx.openai, imagePrompt)
-					: promptImageStableDiffusion(imagePrompt));
-				return image.data ? await processImage(image.data, scene.speechBubble) : "";
+				try {
+					const image = await promptImage(ctx.openai, scene.imagePrompt, input.model);
+					return image.data ? await processImage(image.data, scene.speechBubble) : "";
+				} catch (e) {
+					console.log(`Failed at processing prompt: ${scene.imagePrompt}`);
+					throw e;
+				}
 			});
 			const result = (await Promise.all(promises)).filter(isTruthy);
 			console.log("Images processed. Joining...");
@@ -144,6 +146,18 @@ type ImagePromptOutput = {
 	data?: string;
 };
 
+async function promptImage(openai: OpenAIApi, prompt: string, model: "dalle" | "stablediffusion") {
+	try {
+		const imagePrompt = `${prompt}. Photorealistic. 4k beautiful photography.`;
+		return await (model === "dalle"
+			? promptImageDalle(openai, imagePrompt)
+			: promptImageStableDiffusion(imagePrompt));
+	} catch (e) {
+		console.log(`Failed at image prompt: ${prompt}`);
+		throw e;
+	}
+}
+
 async function promptImageDalle(openai: OpenAIApi, prompt: string): Promise<ImagePromptOutput> {
 	console.log("Prompting Dall-E for images");
 	const imageData = (
@@ -154,19 +168,24 @@ async function promptImageDalle(openai: OpenAIApi, prompt: string): Promise<Imag
 			response_format: "b64_json",
 		})
 	).data.data[0]?.b64_json;
-	const fetchResult = await fetch("http://dev.jednanula.sk:8085/cartoonize", {
-		method: "POST",
-		body: JSON.stringify({ image: imageData }),
-		headers: {
-			"Content-Type": "application/json",
-		},
-	});
-	const json = await fetchResult.json();
-	const cartooned = json.image;
-	return {
-		type: "base64",
-		data: cartooned,
-	};
+	try {
+		const fetchResult = await fetch("http://dev.jednanula.sk:8085/cartoonize", {
+			method: "POST",
+			body: JSON.stringify({ image: imageData }),
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
+		const json = await fetchResult.json();
+		const cartooned = json.image;
+		return {
+			type: "base64",
+			data: cartooned,
+		};
+	} catch (e) {
+		console.log("Cartoonize failed");
+		throw e;
+	}
 }
 
 async function promptImageStableDiffusion(prompt: string): Promise<ImagePromptOutput> {

@@ -4,24 +4,57 @@ import { type SKRSContext2D } from "@napi-rs/canvas";
 
 export async function joinImages(images: string[]) {
 	const imageEls = await Promise.all(
-		images.map((image) => loadImage("data:image/png;base64," + image)),
+		images.map(async (image) => {
+			try {
+				return await loadImage("data:image/png;base64," + image);
+			} catch (e) {
+				console.log("WHY?");
+				throw e;
+			}
+		}),
 	);
 	const cols = imageEls.length <= 3 ? 1 : 2;
 	const elRows = Array.from(new Array(Math.ceil(imageEls.length / cols)), (_, i) =>
 		imageEls.slice(i * cols, i * cols + cols),
 	);
+	const rows = elRows.length;
 	const fullHeight = elRows.reduce((acc, row) => acc + Math.max(...row.map((el) => el.height)), 0);
-	const canvas = createCanvas(1024 * cols, fullHeight);
+	const padding = 16;
+	const wiggle = 50;
+	const canvas = createCanvas(
+		1024 * cols + padding * 2 + cols * wiggle,
+		fullHeight + padding * 2 + rows * wiggle,
+	);
 	const ctx = canvas.getContext("2d");
 	ctx.fillStyle = "white";
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
-	let currentHeight = 0;
+	let currentStartHeight = padding;
 	elRows.forEach((row) => {
-		const rowHeight = Math.max(...row.map((el) => el.height));
+		const rowHeight = Math.max(...row.map((el) => el.height)) + wiggle;
 		row.forEach((el, j) => {
-			ctx.drawImage(el, 1024 * j, currentHeight, el.width, el.height);
+			const wiggleX = Math.random() * wiggle;
+			const wiggleY = Math.random() * wiggle;
+			const rounded = Math.random() > 0.5;
+			if (rounded) {
+				ctx.roundRect(
+					(1024 + padding) * j + wiggleX,
+					currentStartHeight + wiggleY,
+					el.width,
+					el.height,
+					16,
+				);
+				ctx.globalCompositeOperation = "source-in";
+			}
+			ctx.drawImage(
+				el,
+				(1024 + padding) * j + wiggleX,
+				currentStartHeight + wiggleY,
+				el.width,
+				el.height,
+			);
+			ctx.globalCompositeOperation = "source-over";
 		});
-		currentHeight += rowHeight;
+		currentStartHeight += rowHeight + wiggle;
 	});
 	return canvas.toDataURL().split(";base64,")[1];
 }
